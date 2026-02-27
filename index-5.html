@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Fluenci - Language Learning Platform</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --blue-primary: #1B1464; --blue-dark: #121044; --blue-light: #4B47D6;
+      --orange: #FF7A50; --orange-light: #FFF4F1; --green: #00C896; --green-light: #E6FAF5;
+      --yellow: #FFD700; --gray-100: #F7F7F8; --gray-200: #EEEEF0; --gray-300: #D1D1D6;
+      --gray-400: #A1A1AA; --gray-500: #71717A; --gray-600: #52525B; --gray-900: #18181B; --white: #FFFFFF;
+    }
+    body { font-family: 'Inter', -apple-system, sans-serif; background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 20px; }
+    
+    .lock-screen { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-dark) 100%); display: flex; align-items: center; justify-content: center; z-index: 9999; transition: opacity 0.5s, visibility 0.5s; }
+    .lock-screen.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .lock-content { text-align: center; max-width: 400px; padding: 40px; }
+    .lock-icon { width: 80px; height: 80px; background: rgba(255,255,255,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; font-size: 36px; }
+    .lock-logo { font-size: 42px; font-weight: 800; color: var(--white); letter-spacing: -1px; margin-bottom: 8px; }
+    .lock-badge { display: inline-block; background: var(--orange); color: var(--white); font-size: 11px; font-weight: 700; padding: 6px 12px; border-radius: 100px; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 24px; }
+    .lock-title { font-size: 24px; font-weight: 700; color: var(--white); margin-bottom: 12px; }
+    .lock-subtitle { font-size: 15px; color: rgba(255,255,255,0.7); line-height: 1.6; margin-bottom: 32px; }
+    .passcode-form { display: flex; flex-direction: column; gap: 12px; }
+    .passcode-input { width: 100%; padding: 16px 20px; font-size: 16px; font-family: 'Inter', sans-serif; border: 2px solid rgba(255,255,255,0.2); border-radius: 12px; background: rgba(255,255,255,0.1); color: var(--white); text-align: center; letter-spacing: normal; font-weight: 400; outline: none; }
+    .passcode-input::placeholder { color: rgba(255,255,255,0.4); letter-spacing: 0; }
+    .passcode-input:focus { border-color: var(--orange); background: rgba(255,255,255,0.15); }
+    .passcode-input.error { border-color: #EF4444; animation: shake 0.5s; }
+    @keyframes shake { 0%, 100% { transform: translateX(0); } 20%, 60% { transform: translateX(-10px); } 40%, 80% { transform: translateX(10px); } }
+    .unlock-btn { width: 100%; padding: 16px; font-size: 16px; font-weight: 600; font-family: 'Inter', sans-serif; background: var(--orange); color: var(--white); border: none; border-radius: 12px; cursor: pointer; }
+    .unlock-btn:active { transform: scale(0.98); }
+    .error-message { color: #FCA5A5; font-size: 13px; margin-top: 8px; opacity: 0; }
+    .error-message.show { opacity: 1; }
+    .construction-note { margin-top: 32px; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .construction-note p { font-size: 13px; color: rgba(255,255,255,0.5); }
+    
+    .phone-frame { width: 375px; height: 812px; background: var(--white); border-radius: 40px; overflow: hidden; position: relative; box-shadow: 0 50px 100px rgba(0,0,0,0.25), 0 0 0 12px #1a1a1a; }
+    .status-bar { height: 44px; background: var(--white); display: flex; justify-content: space-between; align-items: center; padding: 0 24px; position: absolute; top: 0; left: 0; right: 0; z-index: 100; }
+    .status-bar span { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+    .screen { height: 100%; overflow-y: auto; padding-bottom: 90px; background: var(--white); display: none; }
+    .screen.active { display: block; }
+    .nav-bar { position: absolute; bottom: 0; left: 0; right: 0; height: 84px; background: var(--white); display: flex; justify-content: space-around; align-items: flex-start; padding-top: 10px; border-top: 1px solid var(--gray-200); }
+    .nav-bar.hidden { display: none; }
+    .nav-item { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; padding: 4px 16px; }
+    .nav-item:active { transform: scale(0.95); }
+    .nav-icon { width: 26px; height: 26px; display: flex; align-items: center; justify-content: center; }
+    .avatar-hover-overlay { pointer-events: none; }
+    [onclick='triggerPhotoUpload()']:hover .avatar-hover-overlay { opacity: 1 !important; }
+    .nav-icon svg { width: 24px; height: 24px; stroke: var(--gray-400); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: stroke 0.15s; }
+    .nav-item.active .nav-icon svg { stroke: var(--blue-primary); }
+    .nav-label { font-size: 10px; font-weight: 500; color: var(--gray-400); transition: color 0.15s; }
+    .nav-item.active .nav-label { color: var(--blue-primary); font-weight: 600; }
+    /* SVG icon buttons */
+    .icon-btn { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--gray-100); position: relative; border: none; transition: background 0.15s; }
+    .icon-btn:active { background: var(--gray-200); transform: scale(0.93); }
+    .icon-btn svg { width: 20px; height: 20px; stroke: var(--gray-700); fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+    /* Tutor photo avatar */
+    .tutor-photo { width: 100%; height: 100%; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
+    .tutor-photo-initials { font-size: 36px; font-weight: 800; color: white; letter-spacing: -1px; z-index: 1; position: relative; }
+    .tutor-photo-flag { position: absolute; bottom: 8px; right: 8px; background: white; border-radius: 6px; padding: 2px 5px; font-size: 15px; z-index: 2; box-shadow: 0 2px 6px rgba(0,0,0,0.15); }
+    .tutor-photo-badge-super { position: absolute; top: 8px; left: 8px; background: var(--orange); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 2; }
+    .tutor-photo-badge-new { position: absolute; top: 8px; left: 8px; background: var(--blue-light); color: white; font-size: 10px; font-weight: 700; padding: 3px 8px; border-radius: 4px; z-index: 2; }
+    /* List avatar circle with initials */
+    .list-avatar { width: 100%; height: 100%; border-radius: inherit; display: flex; align-items: center; justify-content: center; font-size: 24px; font-weight: 800; color: white; letter-spacing: -0.5px; }
+    /* Small avatars */
+    .sm-avatar { width: 100%; height: 100%; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 700; color: white; }
+    
+    .auth-screen { height: 100%; background: var(--white); display: none; flex-direction: column; }
+    .auth-screen.active { display: flex; }
+    .auth-header { padding: 60px 24px 32px; text-align: center; }
+    .auth-logo { font-size: 32px; font-weight: 800; color: var(--blue-primary); margin-bottom: 8px; }
+    .auth-tagline { font-size: 14px; color: var(--gray-500); }
+    .auth-content { flex: 1; padding: 0 24px; }
+    .auth-title { font-size: 24px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
+    .auth-subtitle { font-size: 14px; color: var(--gray-500); margin-bottom: 32px; }
+    .auth-form { display: flex; flex-direction: column; gap: 16px; }
+    .input-group { display: flex; flex-direction: column; gap: 6px; }
+    .input-label { font-size: 13px; font-weight: 600; color: var(--gray-600); }
+    .auth-input { width: 100%; padding: 14px 16px; font-size: 15px; font-family: 'Inter', sans-serif; border: 1px solid var(--gray-200); border-radius: 10px; outline: none; }
+    .auth-input:focus { border-color: var(--blue-primary); box-shadow: 0 0 0 3px rgba(27,20,100,0.1); }
+    .auth-btn { width: 100%; padding: 16px; font-size: 16px; font-weight: 600; background: var(--blue-primary); color: var(--white); border: none; border-radius: 10px; cursor: pointer; margin-top: 8px; }
+    .auth-btn:active { transform: scale(0.98); }
+    .auth-btn.secondary { background: var(--white); color: var(--gray-900); border: 1px solid var(--gray-200); }
+    .auth-divider { display: flex; align-items: center; gap: 16px; margin: 24px 0; }
+    .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: var(--gray-200); }
+    .auth-divider span { font-size: 13px; color: var(--gray-400); }
+    .social-btn { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 14px; font-size: 15px; font-weight: 500; background: var(--white); color: var(--gray-900); border: 1px solid var(--gray-200); border-radius: 10px; cursor: pointer; margin-bottom: 12px; }
+    .social-btn:active { background: var(--gray-100); }
+    .auth-footer { padding: 24px; text-align: center; }
+    .auth-footer p { font-size: 14px; color: var(--gray-500); }
+    .auth-footer a { color: var(--blue-primary); font-weight: 600; text-decoration: none; cursor: pointer; }
+    .auth-error { background: #FEF2F2; border: 1px solid #FECACA; color: #DC2626; padding: 12px 16px; border-radius: 8px; font-size: 13px; display: none; margin-bottom: 16px; }
+    .auth-error.show { display: block; }
+    
+    .header { padding: 54px 16px 12px; background: var(--white); display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 24px; font-weight: 800; color: var(--blue-primary); }
+    .header-icons { display: flex; gap: 16px; }
+    .header-icon { width: 40px; height: 40px; border-radius: 12px; display: flex; align-items: center; justify-content: center; cursor: pointer; background: var(--gray-100); position: relative; border: none; transition: background 0.15s; font-size: 18px; }
+    .header-icon:active { background: var(--gray-200); transform: scale(0.93); }
+    .notification-badge { position: absolute; top: -2px; right: -2px; width: 18px; height: 18px; background: var(--orange); color: var(--white); font-size: 10px; font-weight: 700; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+    
+    .search-section { padding: 8px 16px 16px; }
+    .search-bar { display: flex; align-items: center; gap: 12px; background: var(--gray-100); border-radius: 12px; padding: 14px 16px; cursor: pointer; }
+    .search-bar input { flex: 1; border: none; background: transparent; font-size: 15px; color: var(--gray-900); outline: none; font-family: 'Inter', sans-serif; }
+    .search-bar input::placeholder { color: var(--gray-400); }
+    
+    .language-pills { display: flex; gap: 8px; padding: 0 16px 16px; overflow-x: auto; }
+    .language-pill { flex-shrink: 0; padding: 10px 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 100px; font-size: 14px; font-weight: 500; cursor: pointer; }
+    .language-pill.active { background: var(--blue-primary); color: var(--white); border-color: var(--blue-primary); }
+    
+    .hero-section { padding: 16px; background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-dark) 100%); margin: 0 16px 16px; border-radius: 16px; color: var(--white); }
+    .hero-title { font-size: 22px; font-weight: 700; line-height: 1.3; margin-bottom: 8px; }
+    .hero-subtitle { font-size: 14px; opacity: 0.85; margin-bottom: 16px; }
+    .hero-btn { display: inline-flex; background: var(--orange); color: var(--white); padding: 12px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; }
+    .hero-btn:active { transform: scale(0.97); }
+    
+    .section-header { display: flex; justify-content: space-between; align-items: center; padding: 16px 16px 12px; }
+    .section-title { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+    .see-all { font-size: 14px; font-weight: 600; color: var(--blue-light); cursor: pointer; }
+    
+    .stats-banner { display: flex; justify-content: space-around; padding: 20px 16px; background: var(--gray-100); margin: 0 16px 20px; border-radius: 12px; }
+    .stat-item { text-align: center; }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--blue-primary); }
+    .stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; }
+    
+    .tutor-scroll { display: flex; gap: 12px; padding: 0 16px 20px; overflow-x: auto; }
+    .tutor-card { flex-shrink: 0; width: 160px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; overflow: hidden; cursor: pointer; }
+    .tutor-card:active { transform: scale(0.97); }
+    .tutor-image { width: 100%; height: 120px; background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%); display: flex; align-items: center; justify-content: center; font-size: 50px; position: relative; }
+    .tutor-badge { position: absolute; top: 8px; left: 8px; background: var(--orange); color: var(--white); font-size: 10px; font-weight: 600; padding: 4px 8px; border-radius: 4px; }
+    .tutor-online { position: absolute; bottom: 8px; right: 8px; width: 12px; height: 12px; background: var(--green); border: 2px solid var(--white); border-radius: 50%; }
+    .tutor-info { padding: 12px; }
+    .tutor-name { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 2px; }
+    .tutor-country { font-size: 12px; color: var(--gray-500); margin-bottom: 8px; }
+    .tutor-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; margin-bottom: 8px; }
+    .tutor-rating .star { color: var(--yellow); }
+    .tutor-rating .rating-num { font-weight: 600; }
+    .tutor-rating .reviews { color: var(--gray-400); }
+    .tutor-price { font-size: 14px; font-weight: 700; color: var(--gray-900); }
+    .tutor-price span { font-weight: 400; color: var(--gray-500); font-size: 12px; }
+    
+    .categories-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; padding: 0 16px 20px; }
+    .category-card { background: var(--gray-100); border-radius: 12px; padding: 16px; cursor: pointer; }
+    .category-card:active { background: var(--gray-200); }
+    .category-icon { font-size: 28px; margin-bottom: 8px; }
+    .category-name { font-size: 14px; font-weight: 600; color: var(--gray-900); margin-bottom: 2px; }
+    .category-count { font-size: 12px; color: var(--gray-500); }
+    
+    .filters-row { display: flex; gap: 8px; padding: 12px 16px; overflow-x: auto; border-bottom: 1px solid var(--gray-200); }
+    .filter-btn { flex-shrink: 0; padding: 8px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; font-size: 13px; font-weight: 500; color: var(--gray-600); cursor: pointer; }
+    .filter-btn.active { border-color: var(--blue-primary); color: var(--blue-primary); background: rgba(27,20,100,0.05); }
+    
+    .tutor-list { padding: 16px; display: flex; flex-direction: column; gap: 16px; }
+    .tutor-list-card { display: flex; gap: 12px; padding: 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; cursor: pointer; }
+    .tutor-list-card:active { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+    .tutor-list-avatar { width: 80px; height: 80px; border-radius: 12px; background: linear-gradient(135deg, var(--gray-100) 0%, var(--gray-200) 100%); display: flex; align-items: center; justify-content: center; font-size: 36px; flex-shrink: 0; position: relative; }
+    .tutor-list-info { flex: 1; min-width: 0; }
+    .tutor-list-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; }
+    .tutor-list-name { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+    .heart-btn { font-size: 18px; cursor: pointer; }
+    .tutor-list-subtitle { font-size: 13px; color: var(--gray-500); margin-bottom: 6px; }
+    .tutor-list-rating { display: flex; align-items: center; gap: 4px; font-size: 13px; margin-bottom: 8px; }
+    .tutor-list-footer { display: flex; justify-content: space-between; align-items: center; }
+    .tutor-list-price { font-size: 16px; font-weight: 700; color: var(--gray-900); }
+    .tutor-list-price span { font-weight: 400; font-size: 13px; color: var(--gray-500); }
+    .book-trial-btn { padding: 8px 16px; background: var(--blue-primary); color: var(--white); border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; }
+    .book-trial-btn:active { transform: scale(0.95); }
+    
+    .back-btn { position: absolute; top: 54px; left: 16px; width: 36px; height: 36px; background: var(--white); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; font-size: 18px; z-index: 10; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    .back-btn:active { transform: scale(0.9); }
+    .detail-header { position: relative; padding-top: 44px; }
+    .detail-cover { height: 200px; background: linear-gradient(135deg, var(--blue-primary) 0%, var(--blue-dark) 100%); position: relative; }
+    .detail-avatar { width: 100px; height: 100px; border-radius: 50%; background: var(--gray-100); border: 4px solid var(--white); position: absolute; bottom: -50px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; font-size: 48px; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .detail-info { padding: 60px 16px 20px; text-align: center; }
+    .detail-name { font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .detail-country { font-size: 14px; color: var(--gray-500); margin-bottom: 12px; }
+    .detail-stats { display: flex; justify-content: center; gap: 24px; margin-bottom: 16px; }
+    .detail-stat { text-align: center; }
+    .detail-stat-value { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+    .detail-stat-label { font-size: 12px; color: var(--gray-500); }
+    .detail-price { font-size: 24px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+    .detail-price span { font-size: 14px; font-weight: 400; color: var(--gray-500); }
+    .detail-actions { display: flex; gap: 12px; padding: 0 16px; }
+    .action-btn { flex: 1; padding: 14px; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer; border: none; }
+    .action-btn:active { transform: scale(0.97); }
+    .action-btn.primary { background: var(--orange); color: var(--white); }
+    .action-btn.secondary { background: var(--white); color: var(--blue-primary); border: 1px solid var(--gray-200); }
+    .detail-section { padding: 20px 16px; border-top: 1px solid var(--gray-200); }
+    .detail-section-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 12px; }
+    .detail-bio { font-size: 14px; line-height: 1.6; color: var(--gray-600); }
+    .language-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+    .language-tag { padding: 8px 12px; background: var(--gray-100); border-radius: 8px; font-size: 13px; color: var(--gray-700); }
+    .schedule-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .time-slot { padding: 10px 6px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 8px; text-align: center; font-size: 12px; color: var(--gray-600); cursor: pointer; }
+    .time-slot.available { border-color: var(--green); color: var(--green); background: var(--green-light); }
+    .time-slot.selected { background: var(--green); color: var(--white); }
+    .review-card { padding: 16px; background: var(--gray-100); border-radius: 12px; margin-bottom: 12px; }
+    .review-header { display: flex; justify-content: space-between; margin-bottom: 8px; }
+    .reviewer-name { font-size: 14px; font-weight: 600; color: var(--gray-900); }
+    .review-rating { color: var(--yellow); font-size: 13px; }
+    .review-text { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+    
+    .lessons-header { padding: 60px 16px 16px; background: var(--white); }
+    .lessons-title { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+    .lessons-tabs { display: flex; border-bottom: 1px solid var(--gray-200); padding: 0 16px; }
+    .lessons-tab { flex: 1; padding: 14px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; }
+    .lessons-tab.active { color: var(--blue-primary); border-bottom-color: var(--blue-primary); }
+    .lesson-card { margin: 16px; padding: 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; }
+    .lesson-date { font-size: 12px; font-weight: 600; color: var(--blue-primary); margin-bottom: 8px; }
+    .lesson-tutor { display: flex; gap: 12px; margin-bottom: 12px; }
+    .lesson-avatar { width: 48px; height: 48px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 24px; }
+    .lesson-info h4 { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+    .lesson-info p { font-size: 13px; color: var(--gray-500); }
+    .lesson-actions { display: flex; gap: 8px; }
+    .lesson-btn { flex: 1; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; border: none; text-align: center; }
+    .lesson-btn:active { transform: scale(0.97); }
+    .lesson-btn.join { background: var(--green); color: var(--white); }
+    .lesson-btn.reschedule { background: var(--gray-100); color: var(--gray-600); }
+    
+    .profile-header { padding: 60px 16px 24px; background: var(--white); display: flex; align-items: center; gap: 16px; }
+    .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--blue-primary); display: flex; align-items: center; justify-content: center; font-size: 32px; }
+    .profile-info h1 { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+    .profile-info p { font-size: 14px; color: var(--gray-500); }
+    .profile-menu { padding: 0 16px; }
+    .menu-section { margin-bottom: 24px; }
+    .menu-section-title { font-size: 12px; font-weight: 600; color: var(--gray-400); text-transform: uppercase; letter-spacing: 0.5px; padding-bottom: 8px; }
+    .menu-item { display: flex; align-items: center; justify-content: space-between; padding: 14px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+    .menu-item:active { opacity: 0.7; }
+    .menu-item-left { display: flex; align-items: center; gap: 12px; }
+    .menu-icon { width: 36px; height: 36px; border-radius: 10px; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .menu-label { font-size: 15px; color: var(--gray-900); }
+    .menu-arrow { color: var(--gray-400); font-size: 16px; }
+    .logout-btn { margin: 20px 16px; padding: 14px; background: var(--gray-100); border-radius: 10px; text-align: center; font-size: 15px; font-weight: 600; color: #EF4444; cursor: pointer; }
+    .logout-btn:active { background: #FEE2E2; }
+    
+    .message-list { padding: 0 16px; }
+    .message-item { display: flex; gap: 12px; padding: 16px 0; border-bottom: 1px solid var(--gray-100); cursor: pointer; }
+    .message-item:active { opacity: 0.7; }
+    .message-item.unread .message-name { font-weight: 700; }
+    .message-item.unread .message-preview { color: var(--gray-900); font-weight: 500; }
+    .message-avatar { width: 52px; height: 52px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0; position: relative; }
+    .message-avatar .online-dot { position: absolute; bottom: 2px; right: 2px; width: 12px; height: 12px; background: var(--green); border: 2px solid var(--white); border-radius: 50%; }
+    .message-content { flex: 1; min-width: 0; }
+    .message-header { display: flex; justify-content: space-between; margin-bottom: 4px; }
+    .message-name { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+    .message-time { font-size: 12px; color: var(--gray-400); }
+    .message-preview { font-size: 14px; color: var(--gray-500); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    
+    .chat-header { display: flex; align-items: center; gap: 12px; padding: 54px 16px 12px; background: var(--white); border-bottom: 1px solid var(--gray-200); }
+    .chat-user-info { display: flex; align-items: center; gap: 10px; flex: 1; }
+    .chat-avatar-small { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .chat-user-info h3 { font-size: 16px; font-weight: 600; color: var(--gray-900); }
+    .chat-status { font-size: 12px; color: var(--green); }
+    .chat-action-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 18px; cursor: pointer; }
+    .chat-action-btn:active { background: var(--gray-200); }
+    .chat-messages { flex: 1; padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+    .chat-date { text-align: center; font-size: 12px; color: var(--gray-400); margin: 8px 0; }
+    .chat-bubble { max-width: 80%; padding: 12px 16px; border-radius: 18px; }
+    .chat-bubble p { font-size: 14px; line-height: 1.4; margin-bottom: 4px; }
+    .bubble-time { font-size: 11px; color: var(--gray-400); }
+    .chat-bubble.received { background: var(--gray-100); color: var(--gray-900); align-self: flex-start; border-bottom-left-radius: 4px; }
+    .chat-bubble.sent { background: var(--blue-primary); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
+    .chat-bubble.sent .bubble-time { color: rgba(255,255,255,0.7); }
+    .chat-input-container { display: flex; align-items: center; gap: 10px; padding: 12px 16px 32px; background: var(--white); border-top: 1px solid var(--gray-200); }
+    .attach-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-100); border: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .chat-input { flex: 1; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: 24px; font-size: 15px; font-family: 'Inter', sans-serif; outline: none; }
+    .chat-input:focus { border-color: var(--blue-primary); }
+    .send-btn { width: 40px; height: 40px; border-radius: 50%; background: var(--blue-primary); border: none; color: var(--white); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .send-btn:active { transform: scale(0.9); }
+    #screen-chat { display: none; flex-direction: column; padding-bottom: 0; }
+    #screen-chat.active { display: flex; }
+    
+    #screen-videoCall { background: #000; padding-bottom: 0; }
+    #screen-videoCall.active { display: flex; flex-direction: column; }
+    .video-container { flex: 1; position: relative; display: flex; align-items: center; justify-content: center; }
+    .remote-video { width: 100%; height: 100%; background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); display: flex; align-items: center; justify-content: center; font-size: 80px; }
+    .local-video { position: absolute; top: 60px; right: 16px; width: 100px; height: 140px; background: #333; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 40px; border: 2px solid var(--white); }
+    .call-info { position: absolute; top: 60px; left: 16px; color: var(--white); }
+    .call-name { font-size: 18px; font-weight: 600; margin-bottom: 4px; }
+    .call-duration { font-size: 14px; opacity: 0.8; }
+    .call-controls { display: flex; justify-content: center; gap: 20px; padding: 24px; background: rgba(0,0,0,0.5); }
+    .call-btn { width: 56px; height: 56px; border-radius: 50%; border: none; font-size: 24px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+    .call-btn:active { transform: scale(0.9); }
+    .call-btn.mute { background: #444; color: var(--white); }
+    .call-btn.mute.active { background: var(--white); color: #333; }
+    .call-btn.video { background: #444; color: var(--white); }
+    .call-btn.end { background: #EF4444; color: var(--white); }
+    
+    .modal-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; align-items: flex-end; z-index: 200; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { width: 100%; background: var(--white); border-radius: 20px 20px 0 0; padding: 24px; }
+    .modal-handle { width: 40px; height: 4px; background: var(--gray-300); border-radius: 2px; margin: 0 auto 20px; }
+    .modal-title { font-size: 20px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; text-align: center; }
+    .modal-subtitle { font-size: 14px; color: var(--gray-500); text-align: center; margin-bottom: 24px; }
+    .modal-btn { width: 100%; padding: 16px; font-size: 16px; font-weight: 600; background: var(--blue-primary); color: var(--white); border: none; border-radius: 10px; cursor: pointer; margin-bottom: 12px; }
+    .modal-btn.secondary { background: var(--gray-100); color: var(--gray-600); }
+    
+    .toast { position: absolute; top: 60px; left: 16px; right: 16px; background: var(--gray-900); color: var(--white); padding: 16px; border-radius: 12px; font-size: 14px; font-weight: 500; z-index: 300; display: none; align-items: center; gap: 12px; animation: slideDown 0.3s ease; }
+    .toast.show { display: flex; }
+    .toast.success { background: var(--green); }
+    .toast.error { background: #EF4444; }
+    @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+    /* ===== VOICE ROOMS ===== */
+    .rooms-header { padding: 54px 16px 16px; background: var(--white); display: flex; justify-content: space-between; align-items: center; }
+    .rooms-title { font-size: 24px; font-weight: 700; color: var(--gray-900); }
+    .create-room-fab { width: 36px; height: 36px; background: var(--blue-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 22px; cursor: pointer; border: none; }
+    .rooms-filter-row { display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; }
+    .rooms-filter-row::-webkit-scrollbar { display: none; }
+    .room-filter-chip { flex-shrink: 0; padding: 8px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--gray-600); }
+    .room-filter-chip.active { background: var(--blue-primary); border-color: var(--blue-primary); color: var(--white); }
+    .room-card { margin: 0 16px 14px; padding: 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; cursor: pointer; }
+    .room-card:active { transform: scale(0.98); }
+    .room-card.live-card { border-color: rgba(0,200,150,0.35); background: linear-gradient(135deg,#fff 0%,#f0fdf8 100%); }
+    .room-live-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+    .live-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--green); }
+    .live-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: livePulse 1.4s infinite; }
+    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
+    .room-flags { font-size: 18px; }
+    .room-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
+    .room-host { font-size: 12px; color: var(--gray-500); margin-bottom: 10px; }
+    .room-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+    .room-tag { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
+    .room-tag.blue { background: rgba(27,20,100,0.08); color: var(--blue-primary); }
+    .room-tag.green { background: var(--green-light); color: #047857; }
+    .room-tag.orange { background: var(--orange-light); color: #c2410c; }
+    .room-speakers-row { display: flex; gap: 0; margin-bottom: 10px; }
+    .speaker-mini { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--white); display: flex; align-items: center; justify-content: center; font-size: 15px; margin-right: -8px; }
+    .room-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
+    .room-count-text { font-size: 12px; color: var(--gray-500); }
+    .join-room-btn { padding: 8px 18px; background: var(--blue-primary); color: var(--white); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
+    .join-room-btn:active { transform: scale(0.95); }
+    .join-room-btn.outline { background: var(--white); color: var(--gray-600); border: 1px solid var(--gray-200); }
+
+    /* Inside room */
+    .room-inside-header { background: linear-gradient(135deg, var(--blue-primary) 0%, #2a2080 100%); padding: 54px 16px 20px; }
+    .room-inside-title { font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
+    .room-inside-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
+    .speakers-section-label { font-size: 12px; font-weight: 600; color: var(--gray-500); padding: 14px 16px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .speakers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 16px 16px; }
+    .speaker-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+    .speaker-bubble { width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 2.5px solid transparent; position: relative; }
+    .speaker-bubble.is-speaking { border-color: var(--green); box-shadow: 0 0 0 4px rgba(0,200,150,0.2); }
+    .mic-indicator { position: absolute; bottom: 0; right: 0; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--white); display: flex; align-items: center; justify-content: center; font-size: 9px; }
+    .mic-on { background: var(--green); }
+    .mic-off { background: var(--gray-400); }
+    .speaker-name { font-size: 12px; font-weight: 500; color: var(--gray-900); text-align: center; }
+    .speaker-role-label { font-size: 10px; color: var(--gray-400); }
+    .listeners-area { padding: 0 16px 80px; }
+    .listeners-label { font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .listeners-grid { display: flex; flex-wrap: wrap; gap: 12px; }
+    .listener-mini { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+    .listener-bubble { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--gray-100); }
+    .listener-name-small { font-size: 10px; color: var(--gray-500); }
+    .room-controls-bar { position: absolute; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--gray-200); padding: 12px 24px 32px; display: flex; justify-content: space-between; align-items: center; }
+    .room-ctrl { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+    .room-ctrl:active { transform: scale(0.92); }
+    .room-ctrl.mute-ctrl { background: var(--gray-100); }
+    .room-ctrl.mute-ctrl.muted { background: #fee2e2; }
+    .room-ctrl.hand-ctrl { background: rgba(27,20,100,0.08); }
+    .leave-room-btn { padding: 12px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
+
+    /* Create room modal */
+    #createRoomModal .modal-content { padding-bottom: 40px; }
+    .room-name-input { width: 100%; padding: 14px 16px; font-size: 15px; font-family: 'Inter', sans-serif; border: 1px solid var(--gray-200); border-radius: 10px; outline: none; margin-bottom: 16px; }
+    .room-name-input:focus { border-color: var(--blue-primary); }
+    .modal-label { font-size: 13px; font-weight: 600; color: var(--gray-600); margin-bottom: 8px; display: block; }
+    .lang-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+    .lang-chip { padding: 8px 14px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: 13px; cursor: pointer; color: var(--gray-600); }
+    .lang-chip.selected { background: var(--blue-primary); border-color: var(--blue-primary); color: var(--white); }
+    .vibe-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
+    .vibe-chip { padding: 8px 14px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: 13px; cursor: pointer; color: var(--gray-600); }
+    .vibe-chip.selected { background: var(--orange); border-color: var(--orange); color: var(--white); }
+
+    /* ===== SOCIAL PROFILE ===== */
+    .social-profile-header { padding: 54px 16px 20px; background: var(--white); }
+    .social-profile-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
+    .social-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--blue-primary); display: flex; align-items: center; justify-content: center; font-size: 32px; flex-shrink: 0; }
+    .social-name { font-size: 20px; font-weight: 700; color: var(--gray-900); }
+    .social-handle { font-size: 14px; color: var(--gray-500); margin-top: 2px; }
+    .social-bio { font-size: 14px; color: var(--gray-600); line-height: 1.5; margin-top: 6px; }
+    .social-stats-row { display: flex; gap: 0; border: 1px solid var(--gray-200); border-radius: 12px; overflow: hidden; margin: 16px 0 0; }
+    .social-stat { flex: 1; padding: 12px; text-align: center; border-right: 1px solid var(--gray-200); }
+    .social-stat:last-child { border-right: none; }
+    .social-stat-val { font-size: 18px; font-weight: 700; color: var(--gray-900); }
+    .social-stat-label { font-size: 11px; color: var(--gray-500); margin-top: 2px; cursor: pointer; }
+    .social-stat-label:hover { color: var(--blue-primary); }
+    .social-actions-row { display: flex; gap: 10px; margin-top: 16px; }
+    .social-action-btn { flex: 1; padding: 11px; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; border: none; text-align: center; }
+    .social-action-btn.primary { background: var(--blue-primary); color: var(--white); }
+    .social-action-btn.secondary { background: var(--gray-100); color: var(--gray-900); }
+    .lang-tags-row { display: flex; gap: 8px; flex-wrap: wrap; padding: 0 16px 12px; }
+    .lang-tag-badge { padding: 6px 12px; background: var(--gray-100); border-radius: 100px; font-size: 12px; font-weight: 500; color: var(--gray-700); }
+    .profile-tabs { display: flex; border-bottom: 1px solid var(--gray-200); padding: 0 16px; }
+    .profile-tab { flex: 1; padding: 12px; text-align: center; font-size: 14px; font-weight: 600; color: var(--gray-400); cursor: pointer; border-bottom: 2px solid transparent; }
+    .profile-tab.active { color: var(--blue-primary); border-bottom-color: var(--blue-primary); }
+    .profile-tab-content { display: none; }
+    .profile-tab-content.active { display: block; }
+
+    /* Followers modal */
+    .follow-list { padding: 16px; }
+    .follow-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--gray-100); }
+    .follow-avatar { width: 44px; height: 44px; border-radius: 50%; background: var(--gray-100); display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; }
+    .follow-info { flex: 1; }
+    .follow-name { font-size: 15px; font-weight: 600; color: var(--gray-900); }
+    .follow-handle { font-size: 13px; color: var(--gray-500); }
+    .follow-btn { padding: 7px 16px; border-radius: 8px; font-size: 13px; font-weight: 600; border: 1px solid var(--gray-200); background: var(--white); color: var(--blue-primary); cursor: pointer; }
+    .follow-btn.following { background: var(--gray-100); color: var(--gray-600); }
+  </style>
+</head>
+<body>
+  <div class="lock-screen" id="lockScreen">
+    <div class="lock-content">
+      <div class="lock-icon">🔐</div>
+      <h1 class="lock-logo">Fluenci</h1>
+      <div class="lock-badge">🚧 Under Construction</div>
+      <h2 class="lock-title">Coming Soon</h2>
+      <p class="lock-subtitle">We're building something amazing. Enter the passcode to preview our progress.</p>
+      <div class="passcode-form">
+        <input type="password" class="passcode-input" id="passcodeInput" placeholder="Enter passcode" autocomplete="off" onkeypress="if(event.key==='Enter'){event.preventDefault();checkPasscode(event)}">
+        <button type="button" class="unlock-btn" onclick="checkPasscode(event)">Unlock Preview</button>
+      </div>
+      <p class="error-message" id="errorMessage">Incorrect passcode. Try again.</p>
+      <div class="construction-note">
+        <p>This is a preview build. Features may change.</p>
+        <p style="margin-top: 12px;">Questions? <a href="/cdn-cgi/l/email-protection#236b464f4f4c63654f56464d404a0d404c4e" style="color: var(--orange); text-decoration: none; font-weight: 600;"><span class="__cf_email__" data-cfemail="eda588818182adab819888838e84c38e8280">[email&#160;protected]</span></a></p>
+      </div>
+    </div>
+  </div>
+
+  <div class="phone-frame">
+    <div class="status-bar"><span>9:41</span><div class="status-icons"><span>📶</span><span>🔋</span></div></div>
+    <div class="toast" id="toast"><span id="toastIcon">✓</span><span id="toastMessage">Success!</span></div>
+    
+    <div class="auth-screen active" id="screen-welcome">
+      <div class="auth-header" style="padding-top: 100px;"><h1 class="auth-logo">Fluenci</h1><p class="auth-tagline">Learn languages, connect cultures</p></div>
+      <div style="flex: 1; display: flex; flex-direction: column; justify-content: center; padding: 0 24px;">
+        <div style="text-align: center; margin-bottom: 48px;">
+          <div style="font-size: 80px; margin-bottom: 24px;">🌍</div>
+          <h2 style="font-size: 24px; font-weight: 700; color: var(--gray-900); margin-bottom: 12px;">Learn from native speakers</h2>
+          <p style="font-size: 15px; color: var(--gray-500); line-height: 1.5;">Book 1-on-1 lessons with expert tutors from around the world</p>
+        </div>
+        <button class="auth-btn" onclick="showScreen('signup')">Get started</button>
+        <button class="auth-btn secondary" onclick="showScreen('login')" style="margin-top: 12px;">I already have an account</button>
+      </div>
+      <div class="auth-footer"><p style="font-size: 12px; color: var(--gray-400);">By continuing, you agree to our Terms & Privacy Policy</p></div>
+    </div>
+    
+    <div class="auth-screen" id="screen-signup">
+      <div class="auth-header"><h1 class="auth-logo">Fluenci</h1></div>
+      <div class="auth-content">
+        <h2 class="auth-title">Create account</h2>
+        <p class="auth-subtitle">Start your language learning journey</p>
+        <div class="auth-error" id="signupError">Please fill in all fields</div>
+        <form class="auth-form" onsubmit="handleSignup(event)">
+          <div class="input-group"><label class="input-label">Full name</label><input type="text" class="auth-input" id="signupName" placeholder="Enter your name"></div>
+          <div class="input-group"><label class="input-label">Email</label><input type="email" class="auth-input" id="signupEmail" placeholder="Enter your email"></div>
+          <div class="input-group"><label class="input-label">Password</label><input type="password" class="auth-input" id="signupPassword" placeholder="Create a password"></div>
+          <button type="submit" class="auth-btn">Create account</button>
+        </form>
+        <div class="auth-divider"><span>or continue with</span></div>
+        <button class="social-btn" onclick="socialLogin('Google')"><span>🔵</span> Continue with Google</button>
+        <button class="social-btn" onclick="socialLogin('Apple')"><span>🍎</span> Continue with Apple</button>
+      </div>
+      <div class="auth-footer"><p>Already have an account? <a onclick="showScreen('login')">Sign in</a></p></div>
+    </div>
+    
+    <div class="auth-screen" id="screen-login">
+      <div class="auth-header"><h1 class="auth-logo">Fluenci</h1></div>
+      <div class="auth-content">
+        <h2 class="auth-title">Welcome back</h2>
+        <p class="auth-subtitle">Sign in to continue learning</p>
+        <div class="auth-error" id="loginError">Invalid email or password</div>
+        <form class="auth-form" onsubmit="handleLogin(event)">
+          <div class="input-group"><label class="input-label">Email</label><input type="email" class="auth-input" id="loginEmail" placeholder="Enter your email"></div>
+          <div class="input-group"><label class="input-label">Password</label><input type="password" class="auth-input" id="loginPassword" placeholder="Enter your password"></div>
+          <div style="text-align: right; margin-top: -8px;"><a onclick="showToast('Password reset link sent!', 'success')" style="font-size: 13px; color: var(--blue-primary); cursor: pointer;">Forgot password?</a></div>
+          <button type="submit" class="auth-btn">Sign in</button>
+        </form>
+        <div class="auth-divider"><span>or continue with</span></div>
+        <button class="social-btn" onclick="socialLogin('Google')"><span>🔵</span> Continue with Google</button>
+        <button class="social-btn" onclick="socialLogin('Apple')"><span>🍎</span> Continue with Apple</button>
+      </div>
+      <div class="auth-footer"><p>Don't have an account? <a onclick="showScreen('signup')">Sign up</a></p></div>
+    </div>
+    
+    <div class="screen" id="screen-home">
+      <div class="header">
+        <span class="logo">Fluenci</span>
+        <div class="header-icons">
+          <div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div>
+          <div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div>
+        </div>
+      </div>
+      <div class="search-section"><div class="search-bar">🔍<input type="text" placeholder="Search for tutors or languages" readonly></div></div>
+      <div class="language-pills">
+        <div class="language-pill active" onclick="selectLanguage(this)">🇪🇸 Spanish</div>
+        <div class="language-pill" onclick="selectLanguage(this)">🇫🇷 French</div>
+        <div class="language-pill" onclick="selectLanguage(this)">🇩🇪 German</div>
+        <div class="language-pill" onclick="selectLanguage(this)">🇯🇵 Japanese</div>
+        <div class="language-pill" onclick="selectLanguage(this)">🇰🇷 Korean</div>
+      </div>
+      <div class="hero-section">
+        <h2 class="hero-title">Learn a language with expert tutors</h2>
+        <p class="hero-subtitle">Book 1-on-1 lessons with verified tutors from around the world</p>
+        <button class="hero-btn" onclick="navigateTo('tutors')">Find my tutor →</button>
+      </div>
+      <div class="stats-banner">
+        <div class="stat-item"><div class="stat-value">50K+</div><div class="stat-label">Tutors</div></div>
+        <div class="stat-item"><div class="stat-value">150+</div><div class="stat-label">Languages</div></div>
+        <div class="stat-item"><div class="stat-value">10M+</div><div class="stat-label">Lessons</div></div>
+      </div>
+      <div class="section-header"><h3 class="section-title">Popular tutors</h3><span class="see-all" onclick="navigateTo('tutors')">See all</span></div>
+      <div class="tutor-scroll">
+        <div class="tutor-card" onclick="navigateTo('tutorDetail')"><div class="tutor-image" style="position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background:linear-gradient(145deg,#f97316,#ec4899);"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:white;letter-spacing:-1px;z-index:1;">MG</div><span class="tutor-badge">Super tutor</span><span class="tutor-online"></span><span style="position:absolute;bottom:8px;right:8px;background:white;border-radius:6px;padding:2px 5px;font-size:14px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🇪🇸</span></div><div class="tutor-info"><div class="tutor-name">Maria G.</div><div class="tutor-country">🇪🇸 Spain</div><div class="tutor-rating"><span class="star">★</span><span class="rating-num">4.9</span><span class="reviews">(234)</span></div><div class="tutor-price">$25 <span>/ lesson</span></div></div></div>
+        <div class="tutor-card" onclick="navigateTo('tutorDetail')"><div class="tutor-image" style="position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background:linear-gradient(145deg,#3b82f6,#8b5cf6);"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:white;letter-spacing:-1px;z-index:1;">JD</div><span class="tutor-online"></span><span style="position:absolute;bottom:8px;right:8px;background:white;border-radius:6px;padding:2px 5px;font-size:14px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🇫🇷</span></div><div class="tutor-info"><div class="tutor-name">Jean D.</div><div class="tutor-country">🇫🇷 France</div><div class="tutor-rating"><span class="star">★</span><span class="rating-num">4.8</span><span class="reviews">(189)</span></div><div class="tutor-price">$30 <span>/ lesson</span></div></div></div>
+        <div class="tutor-card" onclick="navigateTo('tutorDetail')"><div class="tutor-image" style="position:relative;overflow:hidden;"><div style="position:absolute;inset:0;background:linear-gradient(145deg,#10b981,#06b6d4);"></div><div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:800;color:white;letter-spacing:-1px;z-index:1;">YT</div><span class="tutor-badge" style="position:absolute;top:8px;left:8px;background:#4B47D6;color:white;font-size:10px;font-weight:700;padding:3px 8px;border-radius:4px;z-index:2;">New</span><span style="position:absolute;bottom:8px;right:8px;background:white;border-radius:6px;padding:2px 5px;font-size:14px;z-index:2;box-shadow:0 2px 6px rgba(0,0,0,0.15);">🇯🇵</span></div><div class="tutor-info"><div class="tutor-name">Yuki T.</div><div class="tutor-country">🇯🇵 Japan</div><div class="tutor-rating"><span class="star">★</span><span class="rating-num">5.0</span><span class="reviews">(56)</span></div><div class="tutor-price">$35 <span>/ lesson</span></div></div></div>
+      </div>
+      <div class="section-header"><h3 class="section-title">Browse by language</h3></div>
+      <div class="categories-grid">
+        <div class="category-card" onclick="navigateTo('tutors')"><div class="category-icon">🇪🇸</div><div class="category-name">Spanish</div><div class="category-count">12,500 tutors</div></div>
+        <div class="category-card" onclick="navigateTo('tutors')"><div class="category-icon">🇫🇷</div><div class="category-name">French</div><div class="category-count">8,200 tutors</div></div>
+        <div class="category-card" onclick="navigateTo('tutors')"><div class="category-icon">🇩🇪</div><div class="category-name">German</div><div class="category-count">5,800 tutors</div></div>
+        <div class="category-card" onclick="navigateTo('tutors')"><div class="category-icon">🇯🇵</div><div class="category-name">Japanese</div><div class="category-count">3,400 tutors</div></div>
+      </div>
+    </div>
+    
+    <div class="screen" id="screen-tutors">
+      <div class="header"><span class="logo">Fluenci</span><div class="header-icons"><div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div><div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div></div></div>
+      <div class="filters-row">
+        <div class="filter-btn active" onclick="toggleFilter(this)">🇪🇸 Spanish</div>
+        <div class="filter-btn" onclick="toggleFilter(this)">💰 Price</div>
+        <div class="filter-btn" onclick="toggleFilter(this)">🕐 Availability</div>
+        <div class="filter-btn" onclick="toggleFilter(this)">⭐ Rating</div>
+      </div>
+      <div class="tutor-list">
+        <div class="tutor-list-card" onclick="navigateTo('tutorDetail')"><div class="tutor-list-avatar" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div class="list-avatar">MG</div><span class="tutor-online" style="position:absolute;bottom:4px;right:4px;"></span></div><div class="tutor-list-info"><div class="tutor-list-header"><span class="tutor-list-name">Maria García</span><span class="heart-btn" onclick="event.stopPropagation();toggleFavorite(this)">🤍</span></div><div class="tutor-list-subtitle">Professional Spanish tutor</div><div class="tutor-list-rating"><span style="color:#FFD700;">★</span><span style="font-weight:600;">4.9</span><span style="color:var(--gray-400);">(234 reviews)</span></div><div class="tutor-list-footer"><span class="tutor-list-price">$25 <span>/ lesson</span></span><button class="book-trial-btn" onclick="event.stopPropagation();bookTrial('Maria García')">Book</button></div></div></div>
+        <div class="tutor-list-card" onclick="navigateTo('tutorDetail')"><div class="tutor-list-avatar" style="background:linear-gradient(145deg,#3b82f6,#8b5cf6);overflow:hidden;"><div class="list-avatar">CM</div></div><div class="tutor-list-info"><div class="tutor-list-header"><span class="tutor-list-name">Carlos Mendez</span><span class="heart-btn" onclick="event.stopPropagation();toggleFavorite(this)">🤍</span></div><div class="tutor-list-subtitle">Native Spanish speaker from Mexico</div><div class="tutor-list-rating"><span style="color:#FFD700;">★</span><span style="font-weight:600;">4.7</span><span style="color:var(--gray-400);">(156 reviews)</span></div><div class="tutor-list-footer"><span class="tutor-list-price">$18 <span>/ lesson</span></span><button class="book-trial-btn" onclick="event.stopPropagation();bookTrial('Carlos Mendez')">Book</button></div></div></div>
+        <div class="tutor-list-card" onclick="navigateTo('tutorDetail')"><div class="tutor-list-avatar" style="background:linear-gradient(145deg,#10b981,#06b6d4);overflow:hidden;"><div class="list-avatar">IR</div><span class="tutor-online" style="position:absolute;bottom:4px;right:4px;"></span></div><div class="tutor-list-info"><div class="tutor-list-header"><span class="tutor-list-name">Isabella Ruiz</span><span class="heart-btn" onclick="event.stopPropagation();toggleFavorite(this)">❤️</span></div><div class="tutor-list-subtitle">Business Spanish specialist</div><div class="tutor-list-rating"><span style="color:#FFD700;">★</span><span style="font-weight:600;">5.0</span><span style="color:var(--gray-400);">(89 reviews)</span></div><div class="tutor-list-footer"><span class="tutor-list-price">$32 <span>/ lesson</span></span><button class="book-trial-btn" onclick="event.stopPropagation();bookTrial('Isabella Ruiz')">Book</button></div></div></div>
+      </div>
+    </div>
+    
+    <div class="screen" id="screen-tutorDetail">
+      <div class="detail-header"><div class="back-btn" onclick="navigateTo('tutors')">←</div><div class="detail-cover"></div><div class="detail-avatar" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div style="font-size:42px;font-weight:800;color:white;">MG</div></div></div>
+      <div class="detail-info">
+        <h1 class="detail-name">Maria García</h1>
+        <p class="detail-country">🇪🇸 Madrid, Spain</p>
+        <div class="detail-stats"><div class="detail-stat"><div class="detail-stat-value">⭐ 4.9</div><div class="detail-stat-label">234 reviews</div></div><div class="detail-stat"><div class="detail-stat-value">1,250</div><div class="detail-stat-label">lessons</div></div><div class="detail-stat"><div class="detail-stat-value">98%</div><div class="detail-stat-label">attendance</div></div></div>
+        <div class="detail-price">$25 <span>/ 50-min lesson</span></div>
+      </div>
+      <div class="detail-actions"><button class="action-btn primary" onclick="bookTrial('Maria García')">Book a Lesson</button><button class="action-btn secondary" onclick="navigateTo('chat')">💬 Message</button></div>
+      <div class="detail-section"><h3 class="detail-section-title">About me</h3><p class="detail-bio">¡Hola! I'm Maria, a certified Spanish teacher with over 5 years of experience teaching students from all over the world. I specialize in conversational Spanish and helping students build confidence in speaking.</p></div>
+      <div class="detail-section"><h3 class="detail-section-title">Languages</h3><div class="language-tags"><div class="language-tag">🇪🇸 Spanish (Native)</div><div class="language-tag">🇬🇧 English (C1)</div><div class="language-tag">🇫🇷 French (B2)</div></div></div>
+      <div class="detail-section"><h3 class="detail-section-title">Availability</h3><div class="schedule-grid"><div class="time-slot available" onclick="selectTimeSlot(this)">9:00 AM</div><div class="time-slot">10:00 AM</div><div class="time-slot available" onclick="selectTimeSlot(this)">11:00 AM</div><div class="time-slot available" onclick="selectTimeSlot(this)">2:00 PM</div><div class="time-slot">3:00 PM</div><div class="time-slot available" onclick="selectTimeSlot(this)">4:00 PM</div><div class="time-slot available" onclick="selectTimeSlot(this)">5:00 PM</div><div class="time-slot">6:00 PM</div></div></div>
+      <div class="detail-section"><h3 class="detail-section-title">Reviews</h3><div class="review-card"><div class="review-header"><span class="reviewer-name">Alex T.</span><span class="review-rating">★★★★★</span></div><p class="review-text">Maria is an excellent teacher! She's patient, encouraging, and makes learning Spanish so much fun.</p></div><div class="review-card"><div class="review-header"><span class="reviewer-name">Sarah K.</span><span class="review-rating">★★★★★</span></div><p class="review-text">Great tutor! My Spanish has improved so much in just a few weeks.</p></div></div>
+    </div>
+    
+    <div class="screen" id="screen-messages">
+      <div class="lessons-header" style="display:flex;justify-content:space-between;align-items:center;"><div style="display:flex;align-items:center;gap:12px;"><div class="back-btn" onclick="navigateTo('home')" style="position:relative;top:0;left:0;box-shadow:none;background:var(--gray-100);">←</div><h1 class="lessons-title">Messages</h1></div></div>
+      <div class="search-section"><div class="search-bar">🔍<input type="text" placeholder="Search messages"></div></div>
+      <div class="message-list">
+        <div class="message-item unread" onclick="navigateTo('chat')"><div class="message-avatar" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div class="sm-avatar">MG</div><span class="online-dot"></span></div><div class="message-content"><div class="message-header"><span class="message-name">Maria García</span><span class="message-time">2m ago</span></div><p class="message-preview">¡Hola! Ready for our lesson today?</p></div></div>
+        <div class="message-item" onclick="navigateTo('chat')"><div class="message-avatar" style="background:linear-gradient(145deg,#3b82f6,#8b5cf6);overflow:hidden;"><div class="sm-avatar">JD</div></div><div class="message-content"><div class="message-header"><span class="message-name">Jean Dubois</span><span class="message-time">1h ago</span></div><p class="message-preview">Thanks for the lesson! See you next week.</p></div></div>
+        <div class="message-item" onclick="navigateTo('chat')"><div class="message-avatar" style="background:linear-gradient(145deg,#10b981,#06b6d4);overflow:hidden;"><div class="sm-avatar">YT</div></div><div class="message-content"><div class="message-header"><span class="message-name">Yuki Tanaka</span><span class="message-time">Yesterday</span></div><p class="message-preview">Here are the study materials I mentioned 📚</p></div></div>
+      </div>
+    </div>
+    
+    <div class="screen" id="screen-chat">
+      <div class="chat-header"><div class="back-btn" onclick="navigateTo('messages')" style="position:relative;top:0;left:0;box-shadow:none;background:var(--gray-100);">←</div><div class="chat-user-info"><div class="chat-avatar-small" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div class="sm-avatar">MG</div></div><div><h3>Maria García</h3><span class="chat-status">Online</span></div></div><div><span class="chat-action-btn" onclick="startVideoCall()">📹</span></div></div>
+      <div class="chat-messages">
+        <div class="chat-date">Today</div>
+        <div class="chat-bubble received"><p>¡Hola! Ready for our lesson today?</p><span class="bubble-time">2:30 PM</span></div>
+        <div class="chat-bubble received"><p>I've prepared some great exercises for practicing the past tense!</p><span class="bubble-time">2:30 PM</span></div>
+        <div class="chat-bubble sent"><p>Hi Maria! Yes, I'm excited! I've been practicing.</p><span class="bubble-time">2:45 PM</span></div>
+        <div class="chat-bubble received"><p>¡Excelente! See you at 3 PM then! 🎉</p><span class="bubble-time">2:46 PM</span></div>
+      </div>
+      <div class="chat-input-container"><button class="attach-btn">📎</button><input type="text" class="chat-input" id="chatInput" placeholder="Type a message..." onkeypress="if(event.key==='Enter')sendMessage()"><button class="send-btn" style="width:40px;height:40px;border-radius:50%;background:var(--blue-primary);border:none;color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;" onclick="sendMessage()">➤</button></div>
+    </div>
+    
+    <div class="screen" id="screen-videoCall">
+      <div class="video-container"><div class="remote-video">👩🏻</div><div class="local-video">👨🏻</div><div class="call-info"><div class="call-name">Maria García</div><div class="call-duration" id="callDuration">00:00</div></div></div>
+      <div class="call-controls"><button class="call-btn mute" onclick="toggleMute(this)">🎤</button><button class="call-btn video" onclick="toggleVideo(this)">📹</button><button class="call-btn end" onclick="endCall()">📞</button></div>
+    </div>
+    
+    <div class="screen" id="screen-lessons">
+      <div class="lessons-header" style="display:flex;justify-content:space-between;align-items:center;">
+        <h1 class="lessons-title">My Lessons</h1>
+        <div style="display:flex;gap:10px;">
+          <div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div>
+          <div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div>
+        </div>
+      </div>
+      <div class="lessons-tabs"><div class="lessons-tab active" onclick="switchLessonsTab(this,'upcoming')">Upcoming</div><div class="lessons-tab" onclick="switchLessonsTab(this,'completed')">Completed</div></div>
+      <div id="lessons-upcoming">
+        <div class="lesson-card"><div class="lesson-date">TODAY, 3:00 PM</div><div class="lesson-tutor"><div class="lesson-avatar" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div class="sm-avatar">MG</div></div><div class="lesson-info"><h4>Maria García</h4><p>Spanish • 50 min lesson</p></div></div><div class="lesson-actions"><button class="lesson-btn join" onclick="startVideoCall()">Join lesson</button><button class="lesson-btn reschedule" onclick="openReschedule('Maria García')">Reschedule</button><button class="lesson-btn" style="flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#FEE2E2;color:#DC2626;" onclick="openCancelModal('Maria García')">Cancel</button></div></div>
+        <div class="lesson-card"><div class="lesson-date">TOMORROW, 10:00 AM</div><div class="lesson-tutor"><div class="lesson-avatar" style="background:linear-gradient(145deg,#3b82f6,#8b5cf6);overflow:hidden;"><div class="sm-avatar">JD</div></div><div class="lesson-info"><h4>Jean Dubois</h4><p>French • 50 min lesson</p></div></div><div class="lesson-actions"><button class="lesson-btn reschedule" onclick="openReschedule('Jean Dubois')">Reschedule</button><button class="lesson-btn" style="flex:1;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;border:none;background:#FEE2E2;color:#DC2626;" onclick="openCancelModal('Jean Dubois')">Cancel</button></div></div>
+      </div>
+      <div id="lessons-completed" style="display:none;">
+        <div class="lesson-card"><div class="lesson-date">MARCH 18, 2:00 PM</div><div class="lesson-tutor"><div class="lesson-avatar" style="background:linear-gradient(145deg,#f97316,#ec4899);overflow:hidden;"><div class="sm-avatar">MG</div></div><div class="lesson-info"><h4>Maria García</h4><p>Spanish • 50 min lesson</p></div></div><div class="lesson-actions"><button class="lesson-btn reschedule" onclick="navigateTo('tutorDetail')">Book again</button><button class="lesson-btn join" style="background:var(--orange);" onclick="openReviewModal()">Review</button></div></div>
+      </div>
+    </div>
+    
+    <div class="screen" id="screen-profile">
+      <div class="profile-header"><div class="profile-avatar" style="background:linear-gradient(145deg,#1B1464,#4B47D6);overflow:hidden;cursor:pointer;position:relative;" onclick="triggerPhotoUpload()" id="profileAvatarEl"><div style="font-size:28px;font-weight:800;color:white;" id="profileAvatarInitials">S</div><div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;" class="avatar-hover-overlay"><svg viewBox="0 0 24 24" width="20" height="20" style="stroke:white;fill:none;stroke-width:2;stroke-linecap:round;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div></div><div class="profile-info"><h1 id="profileName">Stephen</h1><p id="profileEmail"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="710205140119141f31141c10181d5f121e1c">[email&#160;protected]</a></p></div></div>
+      <div class="profile-menu">
+        <div class="menu-section"><div class="menu-section-title">Account</div>
+          <div class="menu-item" onclick="openEditProfile()"><div class="menu-item-left"><div class="menu-icon">👤</div><span class="menu-label">Edit profile</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openLearningLangs()"><div class="menu-item-left"><div class="menu-icon">🌍</div><span class="menu-label">Learning languages</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openPayment()"><div class="menu-item-left"><div class="menu-icon">💳</div><span class="menu-label">Payment methods</span></div><span class="menu-arrow">›</span></div>
+        </div>
+        <div class="menu-section"><div class="menu-section-title">Preferences</div>
+          <div class="menu-item" onclick="openNotifs()"><div class="menu-item-left"><div class="menu-icon">🔔</div><span class="menu-label">Notifications</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openTimezone()"><div class="menu-item-left"><div class="menu-icon">🕐</div><span class="menu-label">Time zone</span></div><span class="menu-arrow">›</span></div>
+        </div>
+        <div class="menu-section"><div class="menu-section-title">Support</div>
+          <div class="menu-item" onclick="openHelp()"><div class="menu-item-left"><div class="menu-icon">❓</div><span class="menu-label">Help center</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="window.location.href='mailto:Hello@Fluenci.com'"><div class="menu-item-left"><div class="menu-icon">💬</div><span class="menu-label">Contact us</span></div><span class="menu-arrow">›</span></div>
+        </div>
+      </div>
+      <div class="logout-btn" onclick="logout()">Log out</div>
+    </div>
+    
+    <!-- ===== VOICE ROOMS SCREEN ===== -->
+    <div class="screen" id="screen-rooms">
+      <div class="rooms-header">
+        <h1 class="rooms-title">Voice Rooms</h1>
+        <div style="display:flex;gap:10px;align-items:center;">
+          <div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div>
+          <div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div>
+          <button class="create-room-fab" onclick="openCreateRoom()">＋</button>
+        </div>
+      </div>
+      <div class="rooms-filter-row">
+        <div class="room-filter-chip active" onclick="filterRooms(this)">All</div>
+        <div class="room-filter-chip" onclick="filterRooms(this)">🇪🇸 Spanish</div>
+        <div class="room-filter-chip" onclick="filterRooms(this)">🇯🇵 Japanese</div>
+        <div class="room-filter-chip" onclick="filterRooms(this)">🇫🇷 French</div>
+        <div class="room-filter-chip" onclick="filterRooms(this)">🇰🇷 Korean</div>
+        <div class="room-filter-chip" onclick="filterRooms(this)">🇧🇷 Portuguese</div>
+      </div>
+
+      <div class="room-card live-card" onclick="navigateTo('roomInside')">
+        <div class="room-live-row"><div class="live-pill">LIVE · 32 min</div><div class="room-flags">🇪🇸🇺🇸</div></div>
+        <div class="room-title">late night spanish vibes 🌙</div>
+        <div class="room-host">hosted by @carlos_es</div>
+        <div class="room-tags"><span class="room-tag blue">Beginner OK</span><span class="room-tag green">Chill 😌</span></div>
+        <div class="room-speakers-row">
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">CR</div></div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);"><div style="color:white;font-size:11px;font-weight:700;">AS</div></div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">MR</div></div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">SF</div></div>
+        </div>
+        <div class="room-bottom"><span class="room-count-text">👥 12 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
+      </div>
+
+      <div class="room-card live-card" onclick="navigateTo('roomInside')">
+        <div class="room-live-row"><div class="live-pill">LIVE · 1h 4min</div><div class="room-flags">🇯🇵🇬🇧</div></div>
+        <div class="room-title">english ↔ japanese swap ✌️</div>
+        <div class="room-host">hosted by @yuki_tokyo</div>
+        <div class="room-tags"><span class="room-tag blue">All levels</span></div>
+        <div class="room-speakers-row">
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">YK</div></div>
+          <div class="speaker-mini" style="background:#fef3c7;">😀</div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">LN</div></div>
+        </div>
+        <div class="room-bottom"><span class="room-count-text">👥 8 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
+      </div>
+
+      <div class="room-card live-card" onclick="navigateTo('roomInside')">
+        <div class="room-live-row"><div class="live-pill">LIVE · 22 min</div><div class="room-flags">🇰🇷🇺🇸</div></div>
+        <div class="room-title">k-drama fans practice korean 🎬</div>
+        <div class="room-host">hosted by @seo_jiwon</div>
+        <div class="room-tags"><span class="room-tag blue">Beginner OK</span><span class="room-tag orange">Popular 🔥</span></div>
+        <div class="room-speakers-row">
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">JW</div></div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#3b82f6,#1B1464);"><div style="color:white;font-size:11px;font-weight:700;">EL</div></div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#eab308,#f97316);"><div style="color:white;font-size:11px;font-weight:700;">KM</div></div>
+          <div class="speaker-mini" style="background:#dcfce7;">🙂</div>
+          <div class="speaker-mini" style="background:linear-gradient(135deg,#f97316,#eab308);"><div style="color:white;font-size:11px;font-weight:700;">AP</div></div>
+        </div>
+        <div class="room-bottom"><span class="room-count-text">👥 21 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
+      </div>
+
+      <div class="room-card">
+        <div class="room-live-row"><div style="font-size:12px;color:var(--gray-400);">Starts in 15 min</div><div class="room-flags">🇫🇷🇸🇦</div></div>
+        <div class="room-title">french + arabic morning chat ☕</div>
+        <div class="room-host">hosted by @aminah_fr</div>
+        <div class="room-tags"><span class="room-tag blue">Intermediate</span></div>
+        <div class="room-bottom"><span class="room-count-text">📅 Scheduled</span><button class="join-room-btn outline" onclick="event.stopPropagation();showToast('Reminder set!','success')">Remind me</button></div>
+      </div>
+    </div>
+
+    <!-- ===== ROOM INSIDE SCREEN ===== -->
+    <div class="screen" id="screen-roomInside" style="position:relative;padding-bottom:0;">
+      <div class="room-inside-header">
+        <div class="back-btn" onclick="navigateTo('rooms')" style="position:relative;top:0;left:0;box-shadow:none;background:rgba(255,255,255,0.15);margin-bottom:12px;">←</div>
+        <div class="room-inside-title">late night spanish vibes 🌙</div>
+        <div class="room-inside-sub">🇪🇸🇺🇸 · hosted by @carlos_es · 12 in room</div>
+      </div>
+      <div style="overflow-y:auto;padding-bottom:80px;">
+        <div class="speakers-section-label">🎤 Speaking (4)</div>
+        <div class="speakers-grid">
+          <div class="speaker-tile">
+            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-weight:700;font-size:16px;">CR</div><div class="mic-indicator mic-on">🎤</div></div>
+            <div class="speaker-name">Carlos</div><div class="speaker-role-label">Host</div>
+          </div>
+          <div class="speaker-tile">
+            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);"><div style="color:white;font-weight:700;font-size:16px;">AS</div><div class="mic-indicator mic-on">🎤</div></div>
+            <div class="speaker-name">Ashley</div><div class="speaker-role-label">Speaker</div>
+          </div>
+          <div class="speaker-tile">
+            <div class="speaker-bubble" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-weight:700;font-size:16px;">MR</div><div class="mic-indicator mic-off">🔇</div></div>
+            <div class="speaker-name">Marco</div><div class="speaker-role-label">Speaker</div>
+          </div>
+          <div class="speaker-tile">
+            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-weight:700;font-size:16px;">SF</div><div class="mic-indicator mic-on">🎤</div></div>
+            <div class="speaker-name">Sofia</div><div class="speaker-role-label">Speaker</div>
+          </div>
+        </div>
+        <div class="listeners-area">
+          <div class="listeners-label">👂 Listening (8)</div>
+          <div class="listeners-grid">
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-weight:700;font-size:13px;">YK</div></div><div class="listener-name-small">Yuki</div></div>
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-weight:700;font-size:13px;">EM</div></div><div class="listener-name-small">Emma</div></div>
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#3b82f6,#1B1464);"><div style="color:white;font-weight:700;font-size:13px;">JM</div></div><div class="listener-name-small">James</div></div>
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-weight:700;font-size:13px;">AN</div></div><div class="listener-name-small">Ana</div></div>
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#eab308,#f97316);"><div style="color:white;font-weight:700;font-size:13px;">LE</div></div><div class="listener-name-small">Lee</div></div>
+            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#1B1464,#4B47D6);border:2px solid var(--blue-primary);"><div style="color:white;font-weight:700;font-size:13px;">YO</div></div><div class="listener-name-small" style="color:var(--blue-primary);font-weight:600;">You</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="room-controls-bar">
+        <button class="room-ctrl mute-ctrl" id="roomMuteBtn" onclick="toggleRoomMute()">🎤</button>
+        <button class="room-ctrl hand-ctrl" onclick="showToast('Hand raised! 🙋','success')">✋</button>
+        <button class="leave-room-btn" onclick="navigateTo('rooms');showToast('Left the room')">Leave quietly</button>
+      </div>
+    </div>
+
+    <!-- ===== SOCIAL PROFILE SCREEN ===== -->
+    <div class="screen" id="screen-socialProfile">
+      <div class="social-profile-header">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;padding-top:10px;">
+          <div class="social-profile-top" style="flex:1;">
+            <div class="social-avatar" style="background:linear-gradient(145deg,#1B1464,#4B47D6);overflow:hidden;cursor:pointer;position:relative;" onclick="triggerPhotoUpload()" id="socialAvatarEl"><div style="font-size:28px;font-weight:800;color:white;" id="socialAvatarInitials">S</div><div style="position:absolute;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;" class="avatar-hover-overlay"><svg viewBox="0 0 24 24" width="16" height="16" style="stroke:white;fill:none;stroke-width:2;stroke-linecap:round;"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/><circle cx="12" cy="13" r="4"/></svg></div></div>
+            <div>
+              <div class="social-name" id="socialProfileName">Stephen M.</div>
+              <div class="social-handle" id="socialProfileHandle">@stephen_learns</div>
+              <div class="social-bio">Learning Spanish 🇪🇸 · New York</div>
+            </div>
+          </div>
+          <div style="display:flex;gap:10px;flex-shrink:0;">
+            <div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div>
+            <div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div>
+          </div>
+        </div>
+        <div class="social-stats-row" style="margin-top:16px;">
+          <div class="social-stat" style="cursor:pointer;" onclick="openFollowers('following')"><div class="social-stat-val">14</div><div class="social-stat-label">Following</div></div>
+          <div class="social-stat" style="cursor:pointer;" onclick="openFollowers('followers')"><div class="social-stat-val">38</div><div class="social-stat-label">Followers</div></div>
+        </div>
+        <div class="social-actions-row">
+          <button class="social-action-btn primary" onclick="openEditProfile()">Edit Profile</button>
+          <button class="social-action-btn secondary" onclick="showToast('Link copied! 🔗','success')">Share</button>
+        </div>
+        <input type="file" id="photoUploadInput" accept="image/*" style="display:none;" onchange="handlePhotoUpload(event)">
+      </div>
+      <div class="lang-tags-row">
+        <span class="lang-tag-badge">🇺🇸 English Native</span>
+        <span class="lang-tag-badge">🇪🇸 Spanish A2</span>
+      </div>
+      <div class="profile-menu" style="padding:0 16px;">
+        <div class="menu-section">
+          <div class="menu-section-title">Tutor</div>
+          <div class="menu-item" onclick="openTutorApply()"><div class="menu-item-left"><div class="menu-icon">🎓</div><span class="menu-label" style="color:var(--blue-primary);font-weight:600;">Apply to be a tutor</span></div><span class="menu-arrow">›</span></div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-section-title">Account</div>
+          <div class="menu-item" onclick="openEditProfile()"><div class="menu-item-left"><div class="menu-icon">👤</div><span class="menu-label">Edit profile</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openLearningLangs()"><div class="menu-item-left"><div class="menu-icon">🌍</div><span class="menu-label">Learning languages</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openPayment()"><div class="menu-item-left"><div class="menu-icon">💳</div><span class="menu-label">Payment methods</span></div><span class="menu-arrow">›</span></div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-section-title">Preferences</div>
+          <div class="menu-item" onclick="openNotifs()"><div class="menu-item-left"><div class="menu-icon">🔔</div><span class="menu-label">Notifications</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="openTimezone()"><div class="menu-item-left"><div class="menu-icon">🕐</div><span class="menu-label">Time zone</span></div><span class="menu-arrow">›</span></div>
+        </div>
+        <div class="menu-section">
+          <div class="menu-section-title">Support</div>
+          <div class="menu-item" onclick="openHelp()"><div class="menu-item-left"><div class="menu-icon">❓</div><span class="menu-label">Help center</span></div><span class="menu-arrow">›</span></div>
+          <div class="menu-item" onclick="window.location.href='mailto:Hello@Fluenci.com'"><div class="menu-item-left"><div class="menu-icon">💬</div><span class="menu-label">Contact us</span></div><span class="menu-arrow">›</span></div>
+        </div>
+      </div>
+      <div class="logout-btn" onclick="logout()">Log out</div>
+    </div>
+
+    <!-- ===== FOLLOWERS MODAL ===== -->
+    <div class="modal-overlay" id="followersModal" onclick="if(event.target===this)closeFollowers()">
+      <div class="modal-content" style="max-height:70%;overflow-y:auto;">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title" id="followersModalTitle">Followers</h2>
+        <div class="follow-list">
+          <div class="follow-item"><div class="follow-avatar" style="background:linear-gradient(135deg,#f97316,#ec4899);overflow:hidden;"><div class="sm-avatar">CR</div></div><div class="follow-info"><div class="follow-name">Carlos Rivera</div><div class="follow-handle">@carlos_es · 🇪🇸 Spanish host</div></div><button class="follow-btn following" onclick="toggleFollow(this)">Following</button></div>
+          <div class="follow-item"><div class="follow-avatar" style="background:linear-gradient(135deg,#10b981,#06b6d4);overflow:hidden;"><div class="sm-avatar">YT</div></div><div class="follow-info"><div class="follow-name">Yuki Tanaka</div><div class="follow-handle">@yuki_tokyo · 🇯🇵 Japanese</div></div><button class="follow-btn following" onclick="toggleFollow(this)">Following</button></div>
+          <div class="follow-item"><div class="follow-avatar" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);overflow:hidden;"><div class="sm-avatar">EW</div></div><div class="follow-info"><div class="follow-name">Emma Wilson</div><div class="follow-handle">@emma_w · Learning Spanish</div></div><button class="follow-btn" onclick="toggleFollow(this)">Follow</button></div>
+          <div class="follow-item"><div class="follow-avatar" style="background:linear-gradient(135deg,#3b82f6,#1B1464);overflow:hidden;"><div class="sm-avatar">JS</div></div><div class="follow-info"><div class="follow-name">Jiwon Seo</div><div class="follow-handle">@jiwon_s · 🇰🇷 Korean host</div></div><button class="follow-btn following" onclick="toggleFollow(this)">Following</button></div>
+          <div class="follow-item"><div class="follow-avatar" style="background:linear-gradient(135deg,#f97316,#eab308);overflow:hidden;"><div class="sm-avatar">AL</div></div><div class="follow-info"><div class="follow-name">Ana Lima</div><div class="follow-handle">@ana_lima · 🇧🇷 Portuguese</div></div><button class="follow-btn" onclick="toggleFollow(this)">Follow</button></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== CREATE ROOM MODAL ===== -->
+    <div class="modal-overlay" id="createRoomModal" onclick="if(event.target===this)closeCreateRoom()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Start a Room 🎙️</h2>
+        <label class="modal-label">Room name (be creative!)</label>
+        <input class="room-name-input" id="newRoomName" type="text" placeholder="e.g. chill spanish at midnight 🌙">
+        <label class="modal-label">Languages</label>
+        <div class="lang-chips">
+          <div class="lang-chip selected" onclick="this.classList.toggle('selected')">🇪🇸 Spanish</div>
+          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇺🇸 English</div>
+          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇯🇵 Japanese</div>
+          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇫🇷 French</div>
+          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇰🇷 Korean</div>
+        </div>
+        <label class="modal-label">Vibe</label>
+        <div class="vibe-chips">
+          <div class="vibe-chip selected" onclick="selectVibe(this)">😌 Chill</div>
+          <div class="vibe-chip" onclick="selectVibe(this)">📚 Study</div>
+          <div class="vibe-chip" onclick="selectVibe(this)">🎮 Fun</div>
+          <div class="vibe-chip" onclick="selectVibe(this)">💼 Business</div>
+        </div>
+        <button class="modal-btn" onclick="startRoom()">Go Live Now 🔴</button>
+        <button class="modal-btn secondary" onclick="closeCreateRoom()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- NOTIFICATIONS PANEL -->
+    <div id="notifPanel" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#fff;z-index:150;display:none;flex-direction:column;">
+      <div style="padding:54px 16px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--gray-200);">
+        <div onclick="closeNotifs()" style="width:36px;height:36px;background:var(--gray-100);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:18px;">←</div>
+        <h1 style="font-size:20px;font-weight:700;color:var(--gray-900);">Notifications</h1>
+      </div>
+      <div style="overflow-y:auto;flex:1;">
+        <div onclick="closeNotifs();navigateTo('lessons')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;background:#F0F4FF;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#E6FAF5;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">📅</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">Lesson reminder</div><div style="font-size:13px;color:var(--gray-500);">Your lesson with Maria García starts in 30 minutes</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">30 min ago</div></div>
+        </div>
+        <div onclick="closeNotifs();navigateTo('messages')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;background:#F0F4FF;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#FFF4F1;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💬</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">New message from Maria García</div><div style="font-size:13px;color:var(--gray-500);">¡Hola! Ready for our lesson today?</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">2 min ago</div></div>
+        </div>
+        <div onclick="closeNotifs();navigateTo('rooms')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎙️</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">Carlos started a room</div><div style="font-size:13px;color:var(--gray-500);">late night spanish vibes 🌙 is live</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">1 hr ago</div></div>
+        </div>
+        <div onclick="closeNotifs()" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;">
+          <div style="width:44px;height:44px;border-radius:50%;background:#F3E8FF;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">⭐</div>
+          <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">New follower</div><div style="font-size:13px;color:var(--gray-500);">@emma_w started following you</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">Yesterday</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKING MODAL -->
+    <div class="modal-overlay" id="bookingModal" onclick="if(event.target===this)closeModal()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Book a Lesson</h2>
+        <p class="modal-subtitle" id="bookingTutorName">with Maria García</p>
+        <div class="input-group" style="margin-bottom:16px;"><label class="input-label">Select date</label><input type="date" class="auth-input" id="bookingDate"></div>
+        <div class="input-group" style="margin-bottom:24px;"><label class="input-label">Select time</label><select class="auth-input" id="bookingTime"><option>9:00 AM</option><option>11:00 AM</option><option>2:00 PM</option><option>4:00 PM</option><option>5:00 PM</option></select></div>
+        <button class="modal-btn" onclick="confirmBooking()">Confirm booking</button>
+        <button class="modal-btn secondary" onclick="closeModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- RESCHEDULE MODAL -->
+    <div class="modal-overlay" id="rescheduleModal" onclick="if(event.target===this)closeReschedule()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Reschedule</h2>
+        <p class="modal-subtitle" id="rescheduleTutorName">Lesson with Maria García</p>
+        <div class="input-group" style="margin-bottom:16px;"><label class="input-label">New date</label><input type="date" class="auth-input" id="rescheduleDate"></div>
+        <div class="input-group" style="margin-bottom:24px;"><label class="input-label">New time</label><select class="auth-input"><option>9:00 AM</option><option>10:00 AM</option><option>11:00 AM</option><option>2:00 PM</option><option>4:00 PM</option><option>6:00 PM</option></select></div>
+        <button class="modal-btn" onclick="confirmReschedule()">Confirm reschedule</button>
+        <button class="modal-btn secondary" onclick="closeReschedule()">Keep original time</button>
+      </div>
+    </div>
+
+    <!-- CANCEL MODAL -->
+    <div class="modal-overlay" id="cancelModal" onclick="if(event.target===this)closeCancelModal()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Cancel lesson?</h2>
+        <p class="modal-subtitle" id="cancelTutorName">This will cancel your lesson with Maria García</p>
+        <p style="font-size:13px;color:var(--gray-500);text-align:center;margin-bottom:24px;">Cancellations within 24 hours may not be refunded.</p>
+        <button class="modal-btn" style="background:#EF4444;" onclick="confirmCancel()">Yes, cancel lesson</button>
+        <button class="modal-btn secondary" onclick="closeCancelModal()">Keep my lesson</button>
+      </div>
+    </div>
+
+    <!-- REVIEW MODAL -->
+    <div class="modal-overlay" id="reviewModal" onclick="if(event.target===this)closeReviewModal()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Leave a review</h2>
+        <p class="modal-subtitle">How was your lesson with Maria García?</p>
+        <div style="display:flex;justify-content:center;gap:12px;margin-bottom:20px;" id="starRow">
+          <span style="font-size:36px;cursor:pointer;" onclick="setRating(1)">☆</span>
+          <span style="font-size:36px;cursor:pointer;" onclick="setRating(2)">☆</span>
+          <span style="font-size:36px;cursor:pointer;" onclick="setRating(3)">☆</span>
+          <span style="font-size:36px;cursor:pointer;" onclick="setRating(4)">☆</span>
+          <span style="font-size:36px;cursor:pointer;" onclick="setRating(5)">☆</span>
+        </div>
+        <div class="input-group" style="margin-bottom:20px;"><label class="input-label">Your review</label><textarea class="auth-input" rows="3" placeholder="Share your experience..." style="resize:none;"></textarea></div>
+        <button class="modal-btn" onclick="submitReview()">Submit review</button>
+        <button class="modal-btn secondary" onclick="closeReviewModal()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL -->
+    <div class="modal-overlay" id="editProfileModal" onclick="if(event.target===this)closeEditProfile()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Edit Profile</h2>
+        <div style="display:flex;flex-direction:column;align-items:center;margin-bottom:20px;">
+          <div id="editModalAvatar" style="width:72px;height:72px;border-radius:50%;background:linear-gradient(145deg,#1B1464,#4B47D6);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;margin-bottom:10px;overflow:hidden;cursor:pointer;" onclick="triggerPhotoUpload()">S</div>
+          <button onclick="triggerPhotoUpload()" style="background:none;border:none;color:var(--blue-primary);font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;">📷 Change photo</button>
+        </div>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Full name</label><input type="text" class="auth-input" id="editName" placeholder="Your name"></div>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Username</label><input type="text" class="auth-input" id="editHandle" placeholder="@username"></div>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Bio</label><textarea class="auth-input" id="editBio" rows="2" placeholder="Tell people about yourself..." style="resize:none;"></textarea></div>
+        <div class="input-group" style="margin-bottom:20px;"><label class="input-label">Learning language</label>
+          <select class="auth-input" id="editLang"><option>🇪🇸 Spanish</option><option>🇫🇷 French</option><option>🇩🇪 German</option><option>🇯🇵 Japanese</option><option>🇰🇷 Korean</option></select>
+        </div>
+        <button class="modal-btn" onclick="saveProfile()">Save changes</button>
+        <button class="modal-btn secondary" onclick="closeEditProfile()">Cancel</button>
+      </div>
+    </div>
+
+    <!-- APPLY TO BE A TUTOR MODAL -->
+    <div class="modal-overlay" id="tutorApplyModal" onclick="if(event.target===this)closeTutorApply()">
+      <div class="modal-content">
+        <div class="modal-handle"></div>
+        <h2 class="modal-title">Apply to be a tutor 🎓</h2>
+        <p class="modal-subtitle">Tell us about yourself</p>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Language you teach</label>
+          <select class="auth-input"><option>🇪🇸 Spanish</option><option>🇫🇷 French</option><option>🇩🇪 German</option><option>🇯🇵 Japanese</option><option>🇰🇷 Korean</option><option>🇵🇹 Portuguese</option><option>Other</option></select>
+        </div>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Years of teaching experience</label>
+          <select class="auth-input"><option>Less than 1 year</option><option>1–2 years</option><option>3–5 years</option><option>5+ years</option></select>
+        </div>
+        <div class="input-group" style="margin-bottom:14px;"><label class="input-label">Hourly rate (USD)</label><input type="number" class="auth-input" placeholder="e.g. 25"></div>
+        <div class="input-group" style="margin-bottom:20px;"><label class="input-label">Short bio</label><textarea class="auth-input" rows="3" placeholder="Tell students about yourself and your teaching style..." style="resize:none;"></textarea></div>
+        <button class="modal-btn" onclick="submitTutorApp()">Submit application</button>
+        <button class="modal-btn secondary" onclick="closeTutorApply()">Cancel</button>
+      </div>
+    </div>
+
+    <div class="nav-bar" id="navBar">
+      <div class="nav-item active" onclick="navigateTo('home')">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>
+        <span class="nav-label">Home</span>
+      </div>
+      <div class="nav-item" onclick="navigateTo('rooms')">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2 12c0 0 1-4 3-4s3 8 5 8 3-8 5-8 3 4 3 4"/></svg></div>
+        <span class="nav-label">Rooms</span>
+      </div>
+      <div class="nav-item" onclick="navigateTo('lessons')">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <span class="nav-label">Lessons</span>
+      </div>
+      <div class="nav-item" onclick="navigateTo('socialProfile')">
+        <div class="nav-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg></div>
+        <span class="nav-label">Profile</span>
+      </div>
+    </div>
+  </div>
+
+  <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    let currentUser = null, callTimer = null, callSeconds = 0;
+    
+    function checkPasscode(e) {
+      e.preventDefault();
+      const input = document.getElementById('passcodeInput');
+      if (input.value.toLowerCase().trim() === 'fluenci') {
+        document.getElementById('lockScreen').classList.add('hidden');
+        localStorage.setItem('fluenci_unlocked', 'true');
+      } else {
+        input.classList.add('error');
+        document.getElementById('errorMessage').classList.add('show');
+        setTimeout(() => input.classList.remove('error'), 500);
+        input.value = '';
+      }
+    }
+    
+    if (localStorage.getItem('fluenci_unlocked') === 'true') document.getElementById('lockScreen').classList.add('hidden');
+    if (localStorage.getItem('fluenci_user')) { currentUser = JSON.parse(localStorage.getItem('fluenci_user')); showScreen('home'); updateProfileInfo(); }
+    
+    function showScreen(screenId) {
+      document.querySelectorAll('.auth-screen, .screen').forEach(s => s.classList.remove('active'));
+      document.getElementById('screen-' + screenId)?.classList.add('active');
+      const navBar = document.getElementById('navBar');
+      const hideNav = ['welcome', 'login', 'signup', 'tutorDetail', 'chat', 'videoCall', 'roomInside'];
+      navBar.classList.toggle('hidden', hideNav.includes(screenId));
+      if (!hideNav.includes(screenId)) updateNavBar(screenId);
+    }
+    
+    function navigateTo(screenId) { showScreen(screenId); }
+    
+    function updateNavBar(screenId) {
+      document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+      const map = { home: 0, tutors: 0, rooms: 1, messages: -1, lessons: 2, socialProfile: 3, profile: 3 };
+      if (map[screenId] !== undefined) document.querySelectorAll('.nav-item')[map[screenId]].classList.add('active');
+    }
+    
+    function handleSignup(e) {
+      e.preventDefault();
+      const name = document.getElementById('signupName').value.trim();
+      const email = document.getElementById('signupEmail').value.trim();
+      const password = document.getElementById('signupPassword').value;
+      if (!name || !email || !password) { document.getElementById('signupError').classList.add('show'); return; }
+      currentUser = { name, email };
+      localStorage.setItem('fluenci_user', JSON.stringify(currentUser));
+      updateProfileInfo();
+      showToast('Account created!', 'success');
+      showScreen('home');
+    }
+    
+    function handleLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('loginEmail').value.trim();
+      const password = document.getElementById('loginPassword').value;
+      if (!email || !password) { document.getElementById('loginError').classList.add('show'); return; }
+      currentUser = JSON.parse(localStorage.getItem('fluenci_user')) || { name: email.split('@')[0], email };
+      localStorage.setItem('fluenci_user', JSON.stringify(currentUser));
+      updateProfileInfo();
+      showToast('Welcome back!', 'success');
+      showScreen('home');
+    }
+    
+    function socialLogin(provider) {
+      currentUser = { name: 'Stephen', email: 'stephen@email.com' };
+      localStorage.setItem('fluenci_user', JSON.stringify(currentUser));
+      updateProfileInfo();
+      showToast('Signed in with ' + provider, 'success');
+      showScreen('home');
+    }
+    
+    function logout() {
+      localStorage.removeItem('fluenci_user');
+      currentUser = null;
+      showToast('Logged out', 'success');
+      showScreen('welcome');
+    }
+    
+    function updateProfileInfo() {
+      if (currentUser) {
+        document.getElementById('profileName').textContent = currentUser.name;
+        document.getElementById('profileEmail').textContent = currentUser.email;
+        const initials = currentUser.name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
+        const pai = document.getElementById('profileAvatarInitials');
+        const sai = document.getElementById('socialAvatarInitials');
+        if (pai) pai.textContent = initials;
+        if (sai) sai.textContent = initials;
+        const snEl = document.getElementById('socialProfileName');
+        if (snEl) snEl.textContent = currentUser.name;
+        const shEl = document.getElementById('socialProfileHandle');
+        if (shEl) shEl.textContent = '@' + currentUser.name.toLowerCase().replace(/\s+/g,'_') + '_learns';
+      }
+    }
+    
+    function selectLanguage(el) { document.querySelectorAll('.language-pill').forEach(p => p.classList.remove('active')); el.classList.add('active'); }
+    function toggleFilter(el) { el.classList.toggle('active'); }
+    function toggleFavorite(el) { el.textContent = el.textContent === '🤍' ? '❤️' : '🤍'; showToast(el.textContent === '❤️' ? 'Added to favorites' : 'Removed', 'success'); }
+    function selectTimeSlot(el) { document.querySelectorAll('.time-slot').forEach(s => s.classList.remove('selected')); el.classList.add('selected'); showToast('Selected: ' + el.textContent, 'success'); }
+    
+    function bookTrial(name) { document.getElementById('bookingTutorName').textContent = 'with ' + name; document.getElementById('bookingModal').classList.add('active'); }
+    function confirmBooking() { closeModal(); showToast('Lesson booked!', 'success'); setTimeout(() => navigateTo('lessons'), 500); }
+    function closeModal() { document.getElementById('bookingModal').classList.remove('active'); }
+    
+    function switchLessonsTab(el, tab) {
+      document.querySelectorAll('.lessons-tab').forEach(t => t.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('lessons-upcoming').style.display = tab === 'upcoming' ? 'block' : 'none';
+      document.getElementById('lessons-completed').style.display = tab === 'completed' ? 'block' : 'none';
+    }
+    
+    function sendMessage() {
+      const input = document.getElementById('chatInput');
+      if (input.value.trim()) {
+        const msgs = document.querySelector('.chat-messages');
+        msgs.innerHTML += '<div class="chat-bubble sent"><p>' + input.value + '</p><span class="bubble-time">Just now</span></div>';
+        input.value = '';
+        msgs.scrollTop = msgs.scrollHeight;
+        setTimeout(() => { msgs.innerHTML += '<div class="chat-bubble received"><p>Thanks for your message! 😊</p><span class="bubble-time">Just now</span></div>'; msgs.scrollTop = msgs.scrollHeight; }, 1500);
+      }
+    }
+    
+    function startVideoCall() {
+      navigateTo('videoCall');
+      callSeconds = 0;
+      callTimer = setInterval(() => { callSeconds++; document.getElementById('callDuration').textContent = Math.floor(callSeconds/60).toString().padStart(2,'0') + ':' + (callSeconds%60).toString().padStart(2,'0'); }, 1000);
+    }
+    function toggleMute(btn) { btn.classList.toggle('active'); btn.textContent = btn.classList.contains('active') ? '🔇' : '🎤'; }
+    function toggleVideo(btn) { btn.classList.toggle('active'); }
+    function endCall() { clearInterval(callTimer); showToast('Call ended', 'success'); navigateTo('lessons'); }
+    
+    function showToast(msg, type = 'success') {
+      const toast = document.getElementById('toast');
+      document.getElementById('toastMessage').textContent = msg;
+      document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
+      toast.className = 'toast show ' + type;
+      setTimeout(() => toast.classList.remove('show'), 2500);
+    }
+
+    // Voice Rooms
+    function filterRooms(el) { document.querySelectorAll('.room-filter-chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
+    function openCreateRoom() { document.getElementById('createRoomModal').classList.add('active'); }
+    function closeCreateRoom() { document.getElementById('createRoomModal').classList.remove('active'); }
+    function selectVibe(el) { document.querySelectorAll('.vibe-chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
+    function startRoom() {
+      const name = document.getElementById('newRoomName').value.trim();
+      closeCreateRoom();
+      showToast(name ? '"' + name + '" is now live! 🔴' : 'Your room is now live! 🔴', 'success');
+      setTimeout(() => navigateTo('roomInside'), 600);
+    }
+    let roomMuted = false;
+    function toggleRoomMute() {
+      roomMuted = !roomMuted;
+      const btn = document.getElementById('roomMuteBtn');
+      btn.textContent = roomMuted ? '🔇' : '🎤';
+      btn.classList.toggle('muted', roomMuted);
+      showToast(roomMuted ? 'Muted' : 'Unmuted');
+    }
+
+    // Social Profile
+    function switchProfileTab(el, tab) {
+      document.querySelectorAll('.profile-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.profile-tab-content').forEach(c => c.classList.remove('active'));
+      el.classList.add('active');
+      document.getElementById('ptab-' + tab).classList.add('active');
+    }
+    function openFollowers(type) {
+      document.getElementById('followersModalTitle').textContent = type === 'followers' ? 'Followers' : 'Following';
+      document.getElementById('followersModal').classList.add('active');
+    }
+    function closeFollowers() { document.getElementById('followersModal').classList.remove('active'); }
+    function toggleFollow(btn) {
+      const following = btn.classList.contains('following');
+      btn.classList.toggle('following');
+      btn.textContent = following ? 'Follow' : 'Following';
+      showToast(following ? 'Unfollowed' : 'Following! 🎉', 'success');
+    }
+    // Photo upload
+    function triggerPhotoUpload() {
+      document.getElementById('photoUploadInput').click();
+    }
+    function handlePhotoUpload(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const url = e.target.result;
+        const avatarStyle = `background:url(${url}) center/cover no-repeat;`;
+        const profileEl = document.getElementById('profileAvatarEl');
+        const socialEl = document.getElementById('socialAvatarEl');
+        const modalEl = document.getElementById('editModalAvatar');
+        if (profileEl) { profileEl.style.cssText = avatarStyle + 'overflow:hidden;cursor:pointer;position:relative;border-radius:50%;'; document.getElementById('profileAvatarInitials').style.display='none'; }
+        if (socialEl) { socialEl.style.cssText = avatarStyle + 'overflow:hidden;cursor:pointer;position:relative;border-radius:50%;'; document.getElementById('socialAvatarInitials').style.display='none'; }
+        if (modalEl) { modalEl.style.cssText = 'width:72px;height:72px;border-radius:50%;' + avatarStyle + 'overflow:hidden;cursor:pointer;'; modalEl.textContent=''; }
+        showToast('Profile photo updated! 📸', 'success');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    // Notifications
+    function openNotifs() { document.getElementById('notifPanel').style.display='flex'; }
+    function closeNotifs() { document.getElementById('notifPanel').style.display='none'; }
+
+    // Reschedule
+    function openReschedule(name) {
+      document.getElementById('rescheduleTutorName').textContent = 'Lesson with ' + name;
+      // set min date to tomorrow
+      const d = new Date(); d.setDate(d.getDate()+1);
+      document.getElementById('rescheduleDate').min = d.toISOString().split('T')[0];
+      document.getElementById('rescheduleModal').classList.add('active');
+    }
+    function closeReschedule() { document.getElementById('rescheduleModal').classList.remove('active'); }
+    function confirmReschedule() { closeReschedule(); showToast('Lesson rescheduled! ✅', 'success'); }
+
+    // Cancel
+    function openCancelModal(name) {
+      document.getElementById('cancelTutorName').textContent = 'This will cancel your lesson with ' + name;
+      document.getElementById('cancelModal').classList.add('active');
+    }
+    function closeCancelModal() { document.getElementById('cancelModal').classList.remove('active'); }
+    function confirmCancel() { closeCancelModal(); showToast('Lesson cancelled', 'error'); }
+
+    // Review
+    let currentRating = 0;
+    function openReviewModal() { currentRating=0; setRating(0); document.getElementById('reviewModal').classList.add('active'); }
+    function closeReviewModal() { document.getElementById('reviewModal').classList.remove('active'); }
+    function setRating(n) {
+      currentRating = n;
+      document.querySelectorAll('#starRow span').forEach((s,i) => s.textContent = i < n ? '★' : '☆');
+    }
+    function submitReview() {
+      if (!currentRating) { showToast('Please select a star rating', 'error'); return; }
+      closeReviewModal(); showToast('Review submitted! ⭐', 'success');
+    }
+
+    // Edit profile
+    function openEditProfile() {
+      document.getElementById('editName').value = currentUser?.name || '';
+      document.getElementById('editHandle').value = '@' + (currentUser?.name || 'user').toLowerCase().replace(/\s+/g,'_') + '_learns';
+      document.getElementById('editBio').value = 'Learning Spanish 🇪🇸 · New York';
+      // Sync modal avatar to match current profile avatar
+      const socialEl = document.getElementById('socialAvatarEl');
+      const modalEl = document.getElementById('editModalAvatar');
+      if (modalEl && socialEl) {
+        modalEl.style.cssText = socialEl.style.cssText + 'width:72px;height:72px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:white;margin-bottom:10px;overflow:hidden;cursor:pointer;';
+        const initials = document.getElementById('socialAvatarInitials');
+        modalEl.textContent = initials ? initials.textContent : '';
+      }
+      document.getElementById('editProfileModal').classList.add('active');
+    }
+    function closeEditProfile() { document.getElementById('editProfileModal').classList.remove('active'); }
+    function saveProfile() {
+      const name = document.getElementById('editName').value.trim();
+      if (name && currentUser) {
+        currentUser.name = name;
+        localStorage.setItem('fluenci_user', JSON.stringify(currentUser));
+        updateProfileInfo();
+        document.getElementById('socialProfileName').textContent = name;
+        document.getElementById('socialProfileHandle').textContent = '@' + document.getElementById('editHandle').value.replace('@','');
+      }
+      closeEditProfile(); showToast('Profile updated! ✅', 'success');
+    }
+
+    // Tutor apply
+    function openTutorApply() { document.getElementById('tutorApplyModal').classList.add('active'); }
+    function closeTutorApply() { document.getElementById('tutorApplyModal').classList.remove('active'); }
+    function submitTutorApp() { closeTutorApply(); showToast('Application submitted! We\'ll be in touch 🎓', 'success'); }
+
+    // Simple modals for settings items
+    function openLearningLangs() { showToast('🇪🇸 Spanish A2 — tap to change language'); }
+    function openPayment() { showToast('No payment method on file — add one at launch 💳'); }
+    function openNotifSettings() { showToast('Notifications are on 🔔'); }
+    function openTimezone() { showToast('Timezone: Eastern Time (ET)'); }
+    function openHelp() { showToast('Help center opens in browser at launch ❓'); }
+  </script>
+</body>
+</html>
