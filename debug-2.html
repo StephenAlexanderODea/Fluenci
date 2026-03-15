@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const app = initializeApp({
+    apiKey: "AIzaSyB-S6RLgAtFTiI1REjQSpyy4LbnILUtlAU",
+    authDomain: "fluenci-auth.firebaseapp.com",
+    projectId: "fluenci-auth",
+    storageBucket: "fluenci-auth.firebasestorage.app",
+    messagingSenderId: "669848372966",
+    appId: "1:669848372966:web:2c32aa88fcbe9e10cd1d27"
+  });
+  const auth = getAuth(app);
+  const db = getFirestore(app);
+
+  function log(msg, color) {
+    const p = document.createElement('p');
+    p.style.color = color || 'black';
+    p.style.margin = '2px 0';
+    p.textContent = msg;
+    document.getElementById('log').appendChild(p);
+  }
+
+  // Clear sessionStorage first
+  sessionStorage.removeItem('fluenci_user');
+  log('🧹 Cleared sessionStorage', 'gray');
+
+  onAuthStateChanged(auth, async (user) => {
+    if (!user) { log('❌ Not logged in', 'red'); return; }
+    
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    const d = snap.exists() ? snap.data() : {};
+    
+    log('✅ name: [' + d.name + ']', 'green');
+    log('✅ handle: [' + d.handle + ']', 'green');
+    log('✅ bio: [' + d.bio + ']', 'green');
+    
+    // Simulate exactly what updateProfileInfo does
+    const name = d.name || '';
+    const handle = d.handle || '';
+    const bio = d.bio || '';
+    
+    log('--- After || operator ---', 'blue');
+    log('name is: [' + name + '] truthy: ' + !!name);
+    log('handle is: [' + handle + '] truthy: ' + !!handle);
+    log('bio is: [' + bio + '] truthy: ' + !!bio);
+    
+    log('--- Setting elements ---', 'blue');
+    const dn = document.getElementById('profileDisplayName');
+    if (dn) { dn.textContent = name || '—'; log('Set name to: ' + dn.textContent, 'green'); }
+    
+    const dh = document.getElementById('profileDisplayHandle');
+    if (dh) { dh.textContent = handle ? '@' + handle : '@—'; log('Set handle to: ' + dh.textContent, 'green'); }
+    
+    const db2 = document.getElementById('profileDisplayBio');
+    if (db2) { db2.textContent = bio; log('Set bio to: [' + db2.textContent + ']', 'green'); }
+  });
+</script>
+</head>
+<body style="font-family:monospace; padding:20px; font-size:13px;">
+<h2>Debug v3</h2>
+<div id="log"><p>Loading...</p></div>
+<hr>
+<b>Result:</b><br>
+Name: <span id="profileDisplayName">NOT SET</span><br>
+Handle: <span id="profileDisplayHandle">NOT SET</span><br>
+Bio: <span id="profileDisplayBio">NOT SET</span>
+</body>
+</html>
