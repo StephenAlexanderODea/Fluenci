@@ -485,77 +485,6 @@
     .toast.error { background: #EF4444; }
     @keyframes slideDown { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-    /* ===== VOICE ROOMS ===== */
-    .rooms-header { padding: 54px 16px 16px; background: var(--white); display: flex; justify-content: space-between; align-items: center; }
-    .rooms-title { font-size: 24px; font-weight: 700; color: var(--gray-900); }
-    .create-room-fab { width: 36px; height: 36px; background: var(--blue-primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--white); font-size: 22px; cursor: pointer; border: none; }
-    .rooms-filter-row { display: flex; gap: 8px; padding: 0 16px 12px; overflow-x: auto; }
-    .rooms-filter-row::-webkit-scrollbar { display: none; }
-    .room-filter-chip { flex-shrink: 0; padding: 8px 14px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 100px; font-size: 13px; font-weight: 500; cursor: pointer; color: var(--gray-600); }
-    .room-filter-chip.active { background: var(--blue-primary); border-color: var(--blue-primary); color: var(--white); }
-    .room-card { margin: 0 16px 14px; padding: 16px; background: var(--white); border: 1px solid var(--gray-200); border-radius: 16px; cursor: pointer; }
-    .room-card:active { transform: scale(0.98); }
-    .room-card.live-card { border-color: rgba(0,200,150,0.35); background: linear-gradient(135deg,#fff 0%,#f0fdf8 100%); }
-    .room-live-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-    .live-pill { display: flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; color: var(--green); }
-    .live-pill::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--green); animation: livePulse 1.4s infinite; }
-    @keyframes livePulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.5;transform:scale(1.4)} }
-    .room-flags { font-size: 18px; }
-    .room-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
-    .room-host { font-size: 12px; color: var(--gray-500); margin-bottom: 10px; }
-    .room-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
-    .room-tag { padding: 3px 10px; border-radius: 100px; font-size: 11px; font-weight: 600; }
-    .room-tag.blue { background: rgba(27,20,100,0.08); color: var(--blue-primary); }
-    .room-tag.green { background: var(--green-light); color: #047857; }
-    .room-tag.orange { background: var(--orange-light); color: #c2410c; }
-    .room-speakers-row { display: flex; gap: 0; margin-bottom: 10px; }
-    .speaker-mini { width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--white); display: flex; align-items: center; justify-content: center; font-size: 15px; margin-right: -8px; }
-    .room-bottom { display: flex; align-items: center; justify-content: space-between; margin-top: 4px; }
-    .room-count-text { font-size: 12px; color: var(--gray-500); }
-    .join-room-btn { padding: 8px 18px; background: var(--blue-primary); color: var(--white); border: none; border-radius: 8px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .join-room-btn:active { transform: scale(0.95); }
-    .join-room-btn.outline { background: var(--white); color: var(--gray-600); border: 1px solid var(--gray-200); }
-
-    /* Inside room */
-    .room-inside-header { background: linear-gradient(135deg, var(--blue-primary) 0%, #2a2080 100%); padding: 54px 16px 20px; }
-    .room-inside-title { font-size: 18px; font-weight: 700; color: var(--white); margin-bottom: 4px; }
-    .room-inside-sub { font-size: 13px; color: rgba(255,255,255,0.6); }
-    .speakers-section-label { font-size: 12px; font-weight: 600; color: var(--gray-500); padding: 14px 16px 8px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .speakers-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; padding: 0 16px 16px; }
-    .speaker-tile { display: flex; flex-direction: column; align-items: center; gap: 6px; }
-    .speaker-bubble { width: 68px; height: 68px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; border: 2.5px solid transparent; position: relative; }
-    .speaker-bubble.is-speaking { border-color: var(--green); box-shadow: 0 0 0 4px rgba(0,200,150,0.2); }
-    .mic-indicator { position: absolute; bottom: 0; right: 0; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--white); display: flex; align-items: center; justify-content: center; font-size: 9px; }
-    .mic-on { background: var(--green); }
-    .mic-off { background: var(--gray-400); }
-    .speaker-name { font-size: 12px; font-weight: 500; color: var(--gray-900); text-align: center; }
-    .speaker-role-label { font-size: 10px; color: var(--gray-400); }
-    .listeners-area { padding: 0 16px 80px; }
-    .listeners-label { font-size: 12px; font-weight: 600; color: var(--gray-500); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
-    .listeners-grid { display: flex; flex-wrap: wrap; gap: 12px; }
-    .listener-mini { display: flex; flex-direction: column; align-items: center; gap: 4px; }
-    .listener-bubble { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; background: var(--gray-100); }
-    .listener-name-small { font-size: 10px; color: var(--gray-500); }
-    .room-controls-bar { position: absolute; bottom: 0; left: 0; right: 0; background: var(--white); border-top: 1px solid var(--gray-200); padding: 12px 24px 32px; display: flex; justify-content: space-between; align-items: center; }
-    .room-ctrl { width: 48px; height: 48px; border-radius: 50%; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-    .room-ctrl:active { transform: scale(0.92); }
-    .room-ctrl.mute-ctrl { background: var(--gray-100); }
-    .room-ctrl.mute-ctrl.muted { background: #fee2e2; }
-    .room-ctrl.hand-ctrl { background: rgba(27,20,100,0.08); }
-    .leave-room-btn { padding: 12px 20px; background: #fee2e2; color: #dc2626; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; }
-
-    /* Create room modal */
-    #createRoomModal .modal-content { padding-bottom: 40px; }
-    .room-name-input { width: 100%; padding: 14px 16px; font-size: 15px; font-family: 'Inter', sans-serif; border: 1px solid var(--gray-200); border-radius: 10px; outline: none; margin-bottom: 16px; }
-    .room-name-input:focus { border-color: var(--blue-primary); }
-    .modal-label { font-size: 13px; font-weight: 600; color: var(--gray-600); margin-bottom: 8px; display: block; }
-    .lang-chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .lang-chip { padding: 8px 14px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: 13px; cursor: pointer; color: var(--gray-600); }
-    .lang-chip.selected { background: var(--blue-primary); border-color: var(--blue-primary); color: var(--white); }
-    .vibe-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 20px; }
-    .vibe-chip { padding: 8px 14px; border-radius: 100px; border: 1px solid var(--gray-200); font-size: 13px; cursor: pointer; color: var(--gray-600); }
-    .vibe-chip.selected { background: var(--orange); border-color: var(--orange); color: var(--white); }
-
     /* ===== SOCIAL PROFILE ===== */
     .social-profile-header { padding: 54px 16px 20px; background: var(--white); }
     .social-profile-top { display: flex; align-items: center; gap: 16px; margin-bottom: 16px; }
@@ -855,122 +784,6 @@
       <div class="logout-btn" onclick="logout()">Log out</div>
     </div>
     
-    <!-- ===== VOICE ROOMS SCREEN ===== -->
-    <div class="screen" id="screen-rooms">
-      <div class="rooms-header">
-        <h1 class="rooms-title">Voice Rooms</h1>
-        <div style="display:flex;gap:10px;align-items:center;">
-          <div class="header-icon" onclick="navigateTo('messages')">💬<span class="notification-badge">2</span></div>
-          <div class="header-icon" onclick="openNotifs()">🔔<span class="notification-badge">3</span></div>
-          <button class="create-room-fab" onclick="openCreateRoom()">＋</button>
-        </div>
-      </div>
-      <div class="rooms-filter-row">
-        <div class="room-filter-chip active" onclick="filterRooms(this)">All</div>
-        <div class="room-filter-chip" onclick="filterRooms(this)">🇪🇸 Spanish</div>
-        <div class="room-filter-chip" onclick="filterRooms(this)">🇯🇵 Japanese</div>
-        <div class="room-filter-chip" onclick="filterRooms(this)">🇫🇷 French</div>
-        <div class="room-filter-chip" onclick="filterRooms(this)">🇰🇷 Korean</div>
-        <div class="room-filter-chip" onclick="filterRooms(this)">🇧🇷 Portuguese</div>
-      </div>
-
-      <div class="room-card live-card" onclick="navigateTo('roomInside')">
-        <div class="room-live-row"><div class="live-pill">LIVE · 32 min</div><div class="room-flags">🇪🇸🇺🇸</div></div>
-        <div class="room-title">late night spanish vibes 🌙</div>
-        <div class="room-host">hosted by @carlos_es</div>
-        <div class="room-tags"><span class="room-tag blue">Beginner OK</span><span class="room-tag green">Chill 😌</span></div>
-        <div class="room-speakers-row">
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">CR</div></div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);"><div style="color:white;font-size:11px;font-weight:700;">AS</div></div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">MR</div></div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">SF</div></div>
-        </div>
-        <div class="room-bottom"><span class="room-count-text">👥 12 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
-      </div>
-
-      <div class="room-card live-card" onclick="navigateTo('roomInside')">
-        <div class="room-live-row"><div class="live-pill">LIVE · 1h 4min</div><div class="room-flags">🇯🇵🇬🇧</div></div>
-        <div class="room-title">english ↔ japanese swap ✌️</div>
-        <div class="room-host">hosted by @yuki_tokyo</div>
-        <div class="room-tags"><span class="room-tag blue">All levels</span></div>
-        <div class="room-speakers-row">
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">YK</div></div>
-          <div class="speaker-mini" style="background:#fef3c7;">😀</div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-size:11px;font-weight:700;">LN</div></div>
-        </div>
-        <div class="room-bottom"><span class="room-count-text">👥 8 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
-      </div>
-
-      <div class="room-card live-card" onclick="navigateTo('roomInside')">
-        <div class="room-live-row"><div class="live-pill">LIVE · 22 min</div><div class="room-flags">🇰🇷🇺🇸</div></div>
-        <div class="room-title">k-drama fans practice korean 🎬</div>
-        <div class="room-host">hosted by @seo_jiwon</div>
-        <div class="room-tags"><span class="room-tag blue">Beginner OK</span><span class="room-tag orange">Popular 🔥</span></div>
-        <div class="room-speakers-row">
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-size:11px;font-weight:700;">JW</div></div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#3b82f6,#1B1464);"><div style="color:white;font-size:11px;font-weight:700;">EL</div></div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#eab308,#f97316);"><div style="color:white;font-size:11px;font-weight:700;">KM</div></div>
-          <div class="speaker-mini" style="background:#dcfce7;">🙂</div>
-          <div class="speaker-mini" style="background:linear-gradient(135deg,#f97316,#eab308);"><div style="color:white;font-size:11px;font-weight:700;">AP</div></div>
-        </div>
-        <div class="room-bottom"><span class="room-count-text">👥 21 listening</span><button class="join-room-btn" onclick="event.stopPropagation();navigateTo('roomInside')">Join</button></div>
-      </div>
-
-      <div class="room-card">
-        <div class="room-live-row"><div style="font-size:12px;color:var(--gray-400);">Starts in 15 min</div><div class="room-flags">🇫🇷🇸🇦</div></div>
-        <div class="room-title">french + arabic morning chat ☕</div>
-        <div class="room-host">hosted by @aminah_fr</div>
-        <div class="room-tags"><span class="room-tag blue">Intermediate</span></div>
-        <div class="room-bottom"><span class="room-count-text">📅 Scheduled</span><button class="join-room-btn outline" onclick="event.stopPropagation();showToast('Reminder set!','success')">Remind me</button></div>
-      </div>
-    </div>
-
-    <!-- ===== ROOM INSIDE SCREEN ===== -->
-    <div class="screen" id="screen-roomInside" style="position:relative;padding-bottom:0;">
-      <div class="room-inside-header">
-        <div class="back-btn" onclick="navigateTo('rooms')" style="position:relative;top:0;left:0;box-shadow:none;background:rgba(255,255,255,0.15);margin-bottom:12px;">←</div>
-        <div class="room-inside-title">late night spanish vibes 🌙</div>
-        <div class="room-inside-sub">🇪🇸🇺🇸 · hosted by @carlos_es · 12 in room</div>
-      </div>
-      <div style="overflow-y:auto;padding-bottom:80px;">
-        <div class="speakers-section-label">🎤 Speaking (4)</div>
-        <div class="speakers-grid">
-          <div class="speaker-tile">
-            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-weight:700;font-size:16px;">CR</div><div class="mic-indicator mic-on">🎤</div></div>
-            <div class="speaker-name">Carlos</div><div class="speaker-role-label">Host</div>
-          </div>
-          <div class="speaker-tile">
-            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6);"><div style="color:white;font-weight:700;font-size:16px;">AS</div><div class="mic-indicator mic-on">🎤</div></div>
-            <div class="speaker-name">Ashley</div><div class="speaker-role-label">Speaker</div>
-          </div>
-          <div class="speaker-tile">
-            <div class="speaker-bubble" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-weight:700;font-size:16px;">MR</div><div class="mic-indicator mic-off">🔇</div></div>
-            <div class="speaker-name">Marco</div><div class="speaker-role-label">Speaker</div>
-          </div>
-          <div class="speaker-tile">
-            <div class="speaker-bubble is-speaking" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-weight:700;font-size:16px;">SF</div><div class="mic-indicator mic-on">🎤</div></div>
-            <div class="speaker-name">Sofia</div><div class="speaker-role-label">Speaker</div>
-          </div>
-        </div>
-        <div class="listeners-area">
-          <div class="listeners-label">👂 Listening (8)</div>
-          <div class="listeners-grid">
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#10b981,#06b6d4);"><div style="color:white;font-weight:700;font-size:13px;">YK</div></div><div class="listener-name-small">Yuki</div></div>
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#8b5cf6,#ec4899);"><div style="color:white;font-weight:700;font-size:13px;">EM</div></div><div class="listener-name-small">Emma</div></div>
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#3b82f6,#1B1464);"><div style="color:white;font-weight:700;font-size:13px;">JM</div></div><div class="listener-name-small">James</div></div>
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#f97316,#ec4899);"><div style="color:white;font-weight:700;font-size:13px;">AN</div></div><div class="listener-name-small">Ana</div></div>
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#eab308,#f97316);"><div style="color:white;font-weight:700;font-size:13px;">LE</div></div><div class="listener-name-small">Lee</div></div>
-            <div class="listener-mini"><div class="listener-bubble" style="background:linear-gradient(135deg,#1B1464,#4B47D6);border:2px solid var(--blue-primary);"><div style="color:white;font-weight:700;font-size:13px;">YO</div></div><div class="listener-name-small" style="color:var(--blue-primary);font-weight:600;">You</div></div>
-          </div>
-        </div>
-      </div>
-      <div class="room-controls-bar">
-        <button class="room-ctrl mute-ctrl" id="roomMuteBtn" onclick="toggleRoomMute()">🎤</button>
-        <button class="room-ctrl hand-ctrl" onclick="showToast('Hand raised! 🙋','success')">✋</button>
-        <button class="leave-room-btn" onclick="navigateTo('rooms');showToast('Left the room')">Leave quietly</button>
-      </div>
-    </div>
-
     <!-- ===== SOCIAL PROFILE SCREEN ===== -->
     <div class="screen" id="screen-socialProfile" style="background:var(--gray-100); overflow-y:auto; padding-bottom:90px;">
 
@@ -1053,33 +866,6 @@
       </div>
     </div>
 
-    <!-- ===== CREATE ROOM MODAL ===== -->
-    <div class="modal-overlay" id="createRoomModal" onclick="if(event.target===this)closeCreateRoom()">
-      <div class="modal-content">
-        <div class="modal-handle"></div>
-        <h2 class="modal-title">Start a Room 🎙️</h2>
-        <label class="modal-label">Room name (be creative!)</label>
-        <input class="room-name-input" id="newRoomName" type="text" placeholder="e.g. chill spanish at midnight 🌙">
-        <label class="modal-label">Languages</label>
-        <div class="lang-chips">
-          <div class="lang-chip selected" onclick="this.classList.toggle('selected')">🇪🇸 Spanish</div>
-          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇺🇸 English</div>
-          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇯🇵 Japanese</div>
-          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇫🇷 French</div>
-          <div class="lang-chip" onclick="this.classList.toggle('selected')">🇰🇷 Korean</div>
-        </div>
-        <label class="modal-label">Vibe</label>
-        <div class="vibe-chips">
-          <div class="vibe-chip selected" onclick="selectVibe(this)">😌 Chill</div>
-          <div class="vibe-chip" onclick="selectVibe(this)">📚 Study</div>
-          <div class="vibe-chip" onclick="selectVibe(this)">🎮 Fun</div>
-          <div class="vibe-chip" onclick="selectVibe(this)">💼 Business</div>
-        </div>
-        <button class="modal-btn" onclick="startRoom()">Go Live Now 🔴</button>
-        <button class="modal-btn secondary" onclick="closeCreateRoom()">Cancel</button>
-      </div>
-    </div>
-
     <!-- NOTIFICATIONS PANEL -->
     <div id="notifPanel" style="position:absolute;top:0;left:0;right:0;bottom:0;background:#fff;z-index:150;display:none;flex-direction:column;">
       <div style="padding:54px 16px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--gray-200);">
@@ -1095,7 +881,7 @@
           <div style="width:44px;height:44px;border-radius:50%;background:#FFF4F1;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">💬</div>
           <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">New message from Maria García</div><div style="font-size:13px;color:var(--gray-500);">¡Hola! Ready for our lesson today?</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">2 min ago</div></div>
         </div>
-        <div onclick="closeNotifs();navigateTo('rooms')" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;">
+        <div onclick="closeNotifs();window.location.href='/rooms.html'" style="display:flex;gap:12px;padding:16px;border-bottom:1px solid var(--gray-100);cursor:pointer;">
           <div style="width:44px;height:44px;border-radius:50%;background:#EEF2FF;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">🎙️</div>
           <div><div style="font-size:14px;font-weight:600;color:var(--gray-900);">Carlos started a room</div><div style="font-size:13px;color:var(--gray-500);">late night spanish vibes 🌙 is live</div><div style="font-size:11px;color:var(--gray-400);margin-top:4px;">1 hr ago</div></div>
         </div>
@@ -1333,7 +1119,7 @@
         <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M3 9.5L12 3l9 6.5V20a1 1 0 01-1 1H4a1 1 0 01-1-1V9.5z"/><path d="M9 21V12h6v9"/></svg></div>
         <span class="nav-label">Home</span>
       </div>
-      <div class="nav-item" onclick="navigateTo('rooms')">
+      <div class="nav-item" onclick="window.location.href='/rooms.html'">
         <div class="nav-icon"><svg viewBox="0 0 24 24"><path d="M2 12c0 0 1-4 3-4s3 8 5 8 3-8 5-8 3 4 3 4"/></svg></div>
         <span class="nav-label">Rooms</span>
       </div>
@@ -1372,7 +1158,7 @@
       document.querySelectorAll('.auth-screen, .screen').forEach(s => s.classList.remove('active'));
       document.getElementById('screen-' + screenId)?.classList.add('active');
       const navBar = document.getElementById('navBar');
-      const hideNav = ['welcome', 'login', 'signup', 'setupProfile', 'tutorDetail', 'chat', 'videoCall', 'roomInside'];
+      const hideNav = ['welcome', 'login', 'signup', 'setupProfile', 'tutorDetail', 'chat', 'videoCall'];
       navBar.classList.toggle('hidden', hideNav.includes(screenId));
       if (!hideNav.includes(screenId)) updateNavBar(screenId);
       if (screenId === 'adminDashboard') loadAdminDashboard();
@@ -1386,7 +1172,7 @@
     
     function updateNavBar(screenId) {
       document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-      const map = { home: 0, tutors: 0, rooms: 1, messages: -1, lessons: 2, socialProfile: 3, profile: 3 };
+      const map = { home: 0, tutors: 0, messages: -1, lessons: 2, socialProfile: 3, profile: 3 };
       if (map[screenId] !== undefined) document.querySelectorAll('.nav-item')[map[screenId]].classList.add('active');
     }
     
@@ -1548,26 +1334,6 @@
       document.getElementById('toastIcon').textContent = type === 'success' ? '✓' : '✕';
       toast.className = 'toast show ' + type;
       setTimeout(() => toast.classList.remove('show'), 2500);
-    }
-
-    // Voice Rooms
-    function filterRooms(el) { document.querySelectorAll('.room-filter-chip').forEach(c => c.classList.remove('active')); el.classList.add('active'); }
-    function openCreateRoom() { document.getElementById('createRoomModal').classList.add('active'); }
-    function closeCreateRoom() { document.getElementById('createRoomModal').classList.remove('active'); }
-    function selectVibe(el) { document.querySelectorAll('.vibe-chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); }
-    function startRoom() {
-      const name = document.getElementById('newRoomName').value.trim();
-      closeCreateRoom();
-      showToast(name ? '"' + name + '" is now live! 🔴' : 'Your room is now live! 🔴', 'success');
-      setTimeout(() => navigateTo('roomInside'), 600);
-    }
-    let roomMuted = false;
-    function toggleRoomMute() {
-      roomMuted = !roomMuted;
-      const btn = document.getElementById('roomMuteBtn');
-      btn.textContent = roomMuted ? '🔇' : '🎤';
-      btn.classList.toggle('muted', roomMuted);
-      showToast(roomMuted ? 'Muted' : 'Unmuted');
     }
 
     // Social Profile
